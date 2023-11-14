@@ -1,0 +1,52 @@
+type Vessel {
+	id: ID!
+	vesselID: String!
+	name: String!
+	records: [CatchRecord!]!
+}
+
+type CatchRecord {
+	id: ID!
+	weekEndDate: String!
+	vessel: Vessel!
+	area: String
+	gear: String
+	target: String
+	halibut: Float
+	herring: Float
+	redKingCrab: Int
+	otherKingCrab: Int
+	bairdiTanner: Int
+	otherTanner: Int
+	chinook: Int
+	nonChinook: Int
+	sampledHauls: Int
+}
+
+type Query {
+	getAllVessels: [Vessel!]!
+	getVesselRecords(vesselID: String!): [CatchRecord!]!
+	getRecordByDateAndVessel(weekEndDate: String!, vesselID: String!): CatchRecord
+	# Add more queries as needed
+}
+
+type Mutation {
+	addVessel(vesselID: String!, name: String!): Vessel
+	addCatchRecord(
+		vesselID: String!
+		weekEndDate: String!
+		area: String
+		gear: String
+		target: String
+		halibut: Float
+		herring: Float
+		redKingCrab: Int
+		otherKingCrab: Int
+		bairdiTanner: Int
+		otherTanner: Int
+		chinook: Int
+		nonChinook: Int
+		sampledHauls: Int
+	): CatchRecord
+	# Add more mutations as needed
+}
