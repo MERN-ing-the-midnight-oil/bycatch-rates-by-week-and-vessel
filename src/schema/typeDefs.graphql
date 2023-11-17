@@ -24,10 +24,11 @@ type CatchRecord {
 }
 
 type Query {
+	getVesselById(id: ID!): Vessel
+	getCatchRecords(limit: Int): [CatchRecord]
 	getAllVessels: [Vessel!]!
 	getVesselRecords(vesselID: String!): [CatchRecord!]!
 	getRecordByDateAndVessel(weekEndDate: String!, vesselID: String!): CatchRecord
-	# Add more queries as needed
 }
 
 type Mutation {

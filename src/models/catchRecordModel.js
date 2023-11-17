@@ -59,8 +59,13 @@ const CatchRecordSchema = new mongoose.Schema({
 		required: false,
 	},
 });
+let CatchRecord;
 
-const CatchRecord = mongoose.model("CatchRecord", CatchRecordSchema);
-
+try {
+	CatchRecord = mongoose.model("CatchRecord");
+} catch (error) {
+	//if the model does not exist, compile it
+	CatchRecord = mongoose.model("CatchRecord", CatchRecordSchema);
+}
 //mongoose will look for or create a collection with pluralized, lowercase form of CatchRecord, so catchrecords
 module.exports = CatchRecord;

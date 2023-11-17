@@ -11,7 +11,8 @@ mongoose.connect("mongodb://localhost:27017/bycatchDatabase", {
 });
 
 const years = [
-	2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023,
+	2013,
+	// 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023,
 ];
 
 years.forEach((year) => {
@@ -60,5 +61,3 @@ years.forEach((year) => {
 			// Do not disconnect here if you are processing multiple files
 		});
 });
-// If you want to disconnect after all files are processed, do it outside the loop
-// You might want to track the completion of all files before disconnecting
