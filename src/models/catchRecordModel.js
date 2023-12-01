@@ -6,7 +6,9 @@ const CatchRecordSchema = new mongoose.Schema({
 		required: true,
 	},
 	vessel: {
+		//declares that the field will store a MongoDB ObjectId
 		type: mongoose.Schema.Types.ObjectId,
+		//tells Mongoose that the ObjectId refers to the "Vessel" model
 		ref: "Vessel",
 		required: true,
 	},

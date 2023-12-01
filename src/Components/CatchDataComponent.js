@@ -9,7 +9,6 @@ import {
 function CatchRecords() {
 	const [data, setData] = useState([]);
 
-	// Define columns inside the component to avoid ESLint issues
 	const columnHelper = createColumnHelper();
 	const columns = [
 		columnHelper.accessor("weekEndDate", {
@@ -18,14 +17,54 @@ function CatchRecords() {
 		}),
 		columnHelper.accessor("vessel", {
 			header: "Vessel",
-			cell: (info) => info.getValue(),
+			cell: (info) => info.getValue().name || "N/A", // Assuming the vessel object has a "name" property
 		}),
 		columnHelper.accessor("area", {
 			header: "Area",
 			cell: (info) => info.getValue(),
 		}),
+		columnHelper.accessor("gear", {
+			header: "Gear",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("target", {
+			header: "Target",
+			cell: (info) => info.getValue(),
+		}),
 		columnHelper.accessor("halibut", {
 			header: "Halibut",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("herring", {
+			header: "Herring",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("redKingCrab", {
+			header: "Red King Crab",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("otherKingCrab", {
+			header: "Other King Crab",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("bairdiTanner", {
+			header: "Bairdi Tanner",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("otherTanner", {
+			header: "Other Tanner",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("chinook", {
+			header: "Chinook",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("nonChinook", {
+			header: "Non-Chinook",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("sampledHauls", {
+			header: "Sampled Hauls",
 			cell: (info) => info.getValue(),
 		}),
 	];

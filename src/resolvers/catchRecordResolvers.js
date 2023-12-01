@@ -1,3 +1,5 @@
+//Resolvers handle the the fetching of data for fields in a query.  One for each field in the GraphQL schema.
+
 const CatchRecord = require("../models/catchRecordModel");
 const Vessel = require("../models/VesselModel");
 
@@ -25,7 +27,6 @@ const catchRecordResolvers = {
 			}
 		},
 	},
-	// ... potentially other resolver types or nested resolvers ...
 };
 
 module.exports = catchRecordResolvers;

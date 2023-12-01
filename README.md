@@ -1,3 +1,9 @@
+TODO: Use TanStack (React-Table) to display data in a sortable and filterable format.
+
+TODO: create a large form and create controlled form components with a custom hook
+
+TODO: user can submit to win an "award" for having the least bycatch in a particular year, they can apply as a vessel. There are all kinds of "awards" they can apply for , by species, by year, by season, by location, etc. Then my code can verify if they "won" by revealing their ranking given their desired parameters.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
