@@ -8,6 +8,44 @@ console.log(
 	"the CatchRecord imported from catchRecordModel.js to catchRecordRoutes.js is: ",
 	CatchRecord
 );
+// Get records by date range
+router.get("/catchrecords/daterange", async (req, res) => {
+	try {
+		const { startDate, endDate, page = 0, pageSize = 10 } = req.query;
+		if (!startDate || !endDate) {
+			return res.status(400).send("Start date and end date are required");
+		}
+
+		// Convert startDate and endDate to Date objects
+		const start = new Date(startDate);
+		const end = new Date(endDate);
+
+		// Ensure valid date objects
+		if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+			return res.status(400).send("Invalid start date or end date");
+		}
+
+		// Calculate the number of records to skip based on the current page
+		const skipCount = Number(page) * Number(pageSize);
+
+		const records = await CatchRecord.find({
+			weekEndDate: { $gte: start, $lte: end },
+		})
+			.limit(Number(pageSize)) // Defines the number of records per page
+			.skip(skipCount) // Calculates the number of records to skip based on the current page
+			.populate("vessel", "name"); // Populate the 'vessel' field
+
+		if (!records || records.length === 0) {
+			return res
+				.status(404)
+				.send("No catch records found for the given date range");
+		}
+		res.json(records);
+	} catch (error) {
+		console.error("Error in /catchrecords/daterange route:", error);
+		res.status(500).send("Internal Server Error");
+	}
+});
 
 //get records by year
 router.get("/catchrecords/year", async (req, res) => {

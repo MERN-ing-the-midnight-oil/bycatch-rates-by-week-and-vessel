@@ -20,6 +20,9 @@ function CatchRecords() {
 	const [data, setData] = useState([]);
 	const [year, setYear] = useState(new Date().getFullYear());
 
+	const [startDate, setStartDate] = useState("");
+	const [endDate, setEndDate] = useState("");
+
 	const columnHelper = createColumnHelper();
 	const columns = [
 		columnHelper.accessor("weekEndDate", {
@@ -100,12 +103,47 @@ function CatchRecords() {
 		}
 	};
 
+	const fetchDataByDateRange = async () => {
+		try {
+			const url = `http://localhost:4000/api/catchrecords/daterange?startDate=${startDate}&endDate=${endDate}`;
+			console.log("Fetching data from:", url);
+
+			const response = await fetch(url);
+
+			// Log the raw response text
+			const text = await response.text();
+			console.log("Raw response:", text);
+
+			// Attempt to parse JSON only if response is OK and content type is JSON
+			if (
+				response.ok &&
+				response.headers.get("content-type")?.includes("application/json")
+			) {
+				const data = JSON.parse(text);
+
+				// Additional logging or handling of the data
+			} else {
+				console.log("Response was not JSON");
+			}
+		} catch (error) {
+			console.error("Error fetching data:", error);
+		}
+	};
+
 	const handleYearChange = (event) => {
 		setYear(event.target.value);
 	};
 	const handlePageSizeChange = (event) => {
 		setPageSize(parseInt(event.target.value, 10));
 		setPage(0); // Reset to the first page whenever page size changes
+	};
+
+	const handleStartDateChange = (event) => {
+		setStartDate(event.target.value);
+	};
+
+	const handleEndDateChange = (event) => {
+		setEndDate(event.target.value);
 	};
 
 	const table = useReactTable({
@@ -149,8 +187,8 @@ function CatchRecords() {
 					<TextField
 						label="Enter start date"
 						type="date"
-						// Replace with your start date state and handler
-						onChange={() => {}}
+						value={startDate}
+						onChange={handleStartDateChange}
 						InputLabelProps={{
 							shrink: true,
 						}}
@@ -159,8 +197,8 @@ function CatchRecords() {
 					<TextField
 						label="Enter end date"
 						type="date"
-						// Replace with your end date state and handler
-						onChange={() => {}}
+						value={endDate}
+						onChange={handleEndDateChange}
 						InputLabelProps={{
 							shrink: true,
 						}}
@@ -169,8 +207,7 @@ function CatchRecords() {
 					<Button
 						variant="contained"
 						color="secondary"
-						// Replace with your data fetching function for the date range
-						onClick={() => {}}>
+						onClick={fetchDataByDateRange}>
 						Fetch Data by Date Range
 					</Button>
 				</div>
