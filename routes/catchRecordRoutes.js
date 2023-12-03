@@ -8,6 +8,40 @@ console.log(
 	"the CatchRecord imported from catchRecordModel.js to catchRecordRoutes.js is: ",
 	CatchRecord
 );
+
+//get records by year
+router.get("/catchrecords/year", async (req, res) => {
+	try {
+		const { year, page = 0, pageSize = 10 } = req.query;
+		if (!year) {
+			return res.status(400).send("Year is required");
+		}
+
+		// Convert year to a Date range
+		const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
+		const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+
+		// Calculate the number of records to skip based on the current page
+		const skipCount = Number(page) * Number(pageSize);
+
+		const records = await CatchRecord.find({
+			weekEndDate: { $gte: startDate, $lte: endDate },
+		})
+			.limit(Number(pageSize)) // Defines the number of records per page
+			.skip(skipCount) // Calculates the number of records to skip based on the current page
+			.populate("vessel", "name"); // Populate the 'vessel' field
+
+		if (!records || records.length === 0) {
+			return res.status(404).send("No catch records found for the given year");
+		}
+		res.json(records);
+	} catch (error) {
+		console.error("Error in catchrecords/year route:", error);
+		res.status(500).send("Internal Server Error");
+	}
+});
+
+//Grabbing the first 10 records in the mongo DB
 router.get("/catchrecords", async (req, res) => {
 	try {
 		const limit = parseInt(req.query.limit) || 10; // Default to 10 records if limit is not specified

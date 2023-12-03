@@ -6,7 +6,7 @@ function Dashboard() {
 		<div>
 			<h1>Fisheries Data Dashboard</h1>
 			<div>
-				<h2>Catch Records</h2>
+				<h2>Catch Records By Year or Date Range (2013-2023)</h2>
 				<CatchDataComponent />
 			</div>
 			{/* Future components can be added here */}

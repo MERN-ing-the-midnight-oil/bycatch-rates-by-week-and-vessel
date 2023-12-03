@@ -5,9 +5,20 @@ import {
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+	Paper,
+	TextField,
+	Button,
+} from "@mui/material";
 
 function CatchRecords() {
 	const [data, setData] = useState([]);
+	const [year, setYear] = useState(new Date().getFullYear());
 
 	const columnHelper = createColumnHelper();
 	const columns = [
@@ -69,26 +80,33 @@ function CatchRecords() {
 		}),
 	];
 
-	// Fetch data from the API
+	//state variables to manage the pagination
+	const [page, setPage] = useState(0);
+	const [pageSize, setPageSize] = useState(10);
+
 	useEffect(() => {
-		console.log("Component mounted. Starting to fetch data.");
+		fetchDataForYear(year);
+	}, [year, page]); // Fetch data when the year changes
 
-		const fetchData = async () => {
-			try {
-				console.log("Sending request to the API...");
-				const response = await fetch("http://localhost:4000/api/catchrecords");
-				const json = await response.json();
-				console.log("Data received from API:", json.slice(0, 10));
-				setData(json.slice(0, 10)); // Fetch only the first 10 records for now
-			} catch (error) {
-				console.error("Error fetching data:", error);
-			}
-		};
+	const fetchDataForYear = async (selectedYear) => {
+		try {
+			const response = await fetch(
+				`http://localhost:4000/api/catchrecords/year?year=${selectedYear}&page=${page}&pageSize=${pageSize}`
+			);
+			const fetchedData = await response.json();
+			setData(fetchedData);
+		} catch (error) {
+			console.error("Error fetching data:", error);
+		}
+	};
 
-		fetchData();
-	}, []);
-
-	console.log("Rendering table with data:", data);
+	const handleYearChange = (event) => {
+		setYear(event.target.value);
+	};
+	const handlePageSizeChange = (event) => {
+		setPageSize(parseInt(event.target.value, 10));
+		setPage(0); // Reset to the first page whenever page size changes
+	};
 
 	const table = useReactTable({
 		data,
@@ -98,33 +116,106 @@ function CatchRecords() {
 
 	return (
 		<div>
-			<table>
-				<thead>
-					{table.getHeaderGroups().map((headerGroup) => (
-						<tr key={headerGroup.id}>
-							{headerGroup.headers.map((header) => (
-								<th key={header.id}>
-									{flexRender(
-										header.column.columnDef.header,
-										header.getContext()
-									)}
-								</th>
-							))}
-						</tr>
-					))}
-				</thead>
-				<tbody>
-					{table.getRowModel().rows.map((row) => (
-						<tr key={row.id}>
-							{row.getVisibleCells().map((cell) => (
-								<td key={cell.id}>
-									{flexRender(cell.column.columnDef.cell, cell.getContext())}
-								</td>
-							))}
-						</tr>
-					))}
-				</tbody>
-			</table>
+			<Paper style={{ margin: "20px", padding: "20px", overflowX: "auto" }}>
+				<div style={{ marginBottom: "20px" }}>
+					<select
+						value={pageSize}
+						onChange={handlePageSizeChange}>
+						{[10, 20, 50, 100].map((size) => (
+							<option
+								key={size}
+								value={size}>
+								Show {size}
+							</option>
+						))}
+					</select>
+					<TextField
+						label="Enter a year (YYYY)"
+						type="number"
+						value={year}
+						// the useEffect hook depends on the "year" state so it fetches data when the year changes
+						onChange={handleYearChange}
+						style={{ marginRight: "10px" }}
+					/>
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={() => fetchDataForYear(year)}>
+						Fetch Data
+					</Button>
+				</div>
+				{/* New Section for Start and End Date */}
+				<div style={{ marginBottom: "20px" }}>
+					<TextField
+						label="Enter start date"
+						type="date"
+						// Replace with your start date state and handler
+						onChange={() => {}}
+						InputLabelProps={{
+							shrink: true,
+						}}
+						style={{ marginRight: "10px" }}
+					/>
+					<TextField
+						label="Enter end date"
+						type="date"
+						// Replace with your end date state and handler
+						onChange={() => {}}
+						InputLabelProps={{
+							shrink: true,
+						}}
+						style={{ marginRight: "10px" }}
+					/>
+					<Button
+						variant="contained"
+						color="secondary"
+						// Replace with your data fetching function for the date range
+						onClick={() => {}}>
+						Fetch Data by Date Range
+					</Button>
+				</div>
+				<Table>
+					<TableHead>
+						{table.getHeaderGroups().map((headerGroup) => (
+							<TableRow key={headerGroup.id}>
+								{headerGroup.headers.map((header) => (
+									<TableCell
+										key={header.id}
+										style={{ fontWeight: "bold" }}>
+										{flexRender(
+											header.column.columnDef.header,
+											header.getContext()
+										)}
+									</TableCell>
+								))}
+							</TableRow>
+						))}
+					</TableHead>
+					<TableBody>
+						{table.getRowModel().rows.map((row, rowIndex) => (
+							<TableRow
+								key={row.id}
+								style={{
+									backgroundColor: rowIndex % 2 === 0 ? "#f7f7f7" : "white",
+								}}>
+								{row.getVisibleCells().map((cell) => (
+									<TableCell key={cell.id}>
+										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+									</TableCell>
+								))}
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+				<div>
+					<button
+						onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+						disabled={page === 0}>
+						Previous Page
+					</button>
+					<button onClick={() => setPage((prev) => prev + 1)}>Next Page</button>
+				</div>
+			</Paper>
 		</div>
 	);
 }

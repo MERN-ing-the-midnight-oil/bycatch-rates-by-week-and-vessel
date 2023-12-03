@@ -1,0 +1,51 @@
+Rest API vs GraphQL
+
+Initial Data Fetching and Display:
+
+Use REST API: When you're initially fetching and displaying data, like the catch records in a table, a REST API is straightforward and efficient. It's simple for fetching a whole resource or collection.
+Use GraphQL: If your data display involves complex relationships between different entities (like catch records, vessels, and other related data) where you need to fetch data from multiple resources in a single request, GraphQL is more efficient.
+Search, Filtering, and Sorting:
+
+Use GraphQL: For dynamic searches, filters, and sorting where the required data fields can vary, GraphQL shines. It allows the client to specify exactly what data it needs, which can be very handy for building dynamic tables with TanStack.
+Use REST API: For more static or straightforward queries where the structure of the response doesn't change much, REST is sufficient.
+Form Submissions (Formik) and Validations:
+
+Either Approach: Both REST and GraphQL can handle form submissions effectively. The choice here may depend on the complexity of the data being submitted and whether it affects multiple resources.
+State Management (Form State Tracking):
+
+Independent of API Choice: Managing form state, tracking 'dirty' forms, etc., is more of a frontend concern and can be handled independently of whether you use REST or GraphQL.
+Using Material UI and Custom React Components:
+
+Independent of API Choice: The choice of UI framework or custom components is not dependent on the API strategy. You can use Material UI and custom components regardless of whether you're fetching data through REST or GraphQL.
+Demonstrating Both REST and GraphQL:
+
+Balanced Approach: You could use REST for some parts of the application (like initial data fetching or simple CRUD operations) and GraphQL for more complex data interactions (like fetching detailed information about a specific catch record along with related vessel data and aggregations).
+Educational Aspect: If part of your goal is to demonstrate the use of both technologies, you might intentionally implement certain features twice – once with REST and once with GraphQL – to highlight the differences and use cases for each.
+
+
+
+Controlled Components and Custom Hooks
+
+Controlled Components for Form Handling:
+
+When implementing forms for searching, filtering, and submitting data, consider making them controlled components. This means their state will be managed by React (using useState), and their values will be updated with a handleChange event handler.
+For example, in a search form where users can filter catch records, each input field (like search by vessel name, date range, etc.) should be a controlled component.
+Custom Hooks for Data Fetching and State Management:
+
+Create a custom hook for fetching data from the server. This hook can encapsulate the logic for making API requests, handling loading states, errors, and storing the fetched data.
+For instance, a hook like useFetchCatchRecords could be responsible for fetching catch records using either the REST API or GraphQL, depending on the parameters.
+Custom Hooks for Form Validation:
+
+If you are using Formik for forms, you can still create a custom hook for additional form validation logic. This hook can handle complex validation scenarios that might not be directly supported by Formik.
+Custom Hooks for Local Storage and State Persistence:
+
+You can create a custom hook that interacts with the browser's local storage to persist state across sessions. For example, a useLocalStorage hook can store the user's last search or filter preferences.
+Controlled Components in Table Sorting and Pagination:
+
+In your table display using TanStack, you can make the sorting and pagination features controlled components. Manage the state of sorting options and the current page in the component's state and update them based on user interactions.
+Reusable Form Component with Custom Hooks:
+
+Create a reusable form component that uses custom hooks for different functionalities, like handling changes, submissions, and validations. This form can be utilized across different parts of your application where similar functionality is needed.
+Custom Hooks for Real-Time Updates (if applicable):
+
+If your application has any features that require real-time updates (like showing the latest catch records), a custom hook can manage WebSocket connections or polling mechanisms.
