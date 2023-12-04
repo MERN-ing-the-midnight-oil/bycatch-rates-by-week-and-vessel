@@ -105,7 +105,7 @@ function CatchRecords() {
 
 	const fetchDataByDateRange = async () => {
 		try {
-			const url = `http://localhost:4000/api/catchrecords/daterange?startDate=${startDate}&endDate=${endDate}`;
+			const url = `http://localhost:4000/api/catchrecords/daterange?startDate=${startDate}&endDate=${endDate}&page=${page}&pageSize=${pageSize}`;
 			console.log("Fetching data from:", url);
 
 			const response = await fetch(url);
@@ -146,17 +146,6 @@ function CatchRecords() {
 		<div>
 			<Paper style={{ margin: "20px", padding: "20px", overflowX: "auto" }}>
 				<div style={{ marginBottom: "20px" }}>
-					<select
-						value={pageSize}
-						onChange={handlePageSizeChange}>
-						{[10, 20, 50, 100].map((size) => (
-							<option
-								key={size}
-								value={size}>
-								Show {size}
-							</option>
-						))}
-					</select>
 					<TextField
 						label="Enter a year (YYYY)"
 						type="number"
@@ -169,7 +158,7 @@ function CatchRecords() {
 						variant="contained"
 						color="primary"
 						onClick={() => fetchDataForYear(year)}>
-						Fetch Data
+						Fetch Data by year
 					</Button>
 				</div>
 				{/* New Section for Start and End Date */}
@@ -200,6 +189,20 @@ function CatchRecords() {
 						onClick={fetchDataByDateRange}>
 						Fetch Data by Date Range
 					</Button>
+				</div>
+				<div>
+					{" "}
+					<select
+						value={pageSize}
+						onChange={handlePageSizeChange}>
+						{[10, 20, 50, 100].map((size) => (
+							<option
+								key={size}
+								value={size}>
+								Show {size} records per page
+							</option>
+						))}
+					</select>
 				</div>
 				<Table>
 					<TableHead>
