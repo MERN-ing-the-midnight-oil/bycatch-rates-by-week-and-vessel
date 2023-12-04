@@ -109,22 +109,12 @@ function CatchRecords() {
 			console.log("Fetching data from:", url);
 
 			const response = await fetch(url);
-
-			// Log the raw response text
-			const text = await response.text();
-			console.log("Raw response:", text);
-
-			// Attempt to parse JSON only if response is OK and content type is JSON
-			if (
-				response.ok &&
-				response.headers.get("content-type")?.includes("application/json")
-			) {
-				const data = JSON.parse(text);
-
-				// Additional logging or handling of the data
-			} else {
-				console.log("Response was not JSON");
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
 			}
+
+			const fetchedData = await response.json();
+			setData(fetchedData); // Update the table data state
 		} catch (error) {
 			console.error("Error fetching data:", error);
 		}
