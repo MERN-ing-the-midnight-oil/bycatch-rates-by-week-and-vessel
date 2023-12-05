@@ -9,6 +9,8 @@ import {
 	Grid,
 	Button,
 	TextField,
+	Slider,
+	Typography,
 } from "@mui/material";
 
 // GraphQL query to get all vessels
@@ -28,6 +30,26 @@ function BycatchBySeason() {
 	const [endDate, setEndDate] = useState("");
 	const [bycatchSpecies, setBycatchSpecies] = useState("");
 	const [vessels, setVessels] = useState([]);
+
+	const [monthRange, setMonthRange] = useState([1, 12]);
+
+	const formatSliderValue = (value) => {
+		const monthNames = [
+			"Jan",
+			"Feb",
+			"Mar",
+			"Apr",
+			"May",
+			"Jun",
+			"Jul",
+			"Aug",
+			"Sep",
+			"Oct",
+			"Nov",
+			"Dec",
+		];
+		return monthNames[value - 1];
+	};
 
 	const { loading, error, data } = useQuery(GET_ALL_VESSELS);
 
@@ -58,7 +80,7 @@ function BycatchBySeason() {
 	const handleSubmit = (event) => {
 		event.preventDefault();
 		// Handle form submission
-		console.log({ vesselName, targetSpecies, startDate, endDate });
+		console.log({ vesselName, bycatchSpecies, targetSpecies });
 	};
 
 	return (
@@ -131,29 +153,26 @@ function BycatchBySeason() {
 							</Select>
 						</FormControl>
 					</Grid>
-					{/* Date Pickers */}
+					{/* Month Range Slider */}
 					<Grid
 						item
-						xs={6}>
-						<TextField
-							fullWidth
-							label="Start Date"
-							type="date"
-							InputLabelProps={{ shrink: true }}
-							value={startDate}
-							onChange={(e) => setStartDate(e.target.value)}
-						/>
-					</Grid>
-					<Grid
-						item
-						xs={6}>
-						<TextField
-							fullWidth
-							label="End Date"
-							type="date"
-							InputLabelProps={{ shrink: true }}
-							value={endDate}
-							onChange={(e) => setEndDate(e.target.value)}
+						xs={12}>
+						<Typography
+							id="month-range-slider"
+							gutterBottom>
+							Select Month Range
+						</Typography>
+						<Slider
+							value={monthRange}
+							onChange={(event, newValue) => setMonthRange(newValue)}
+							valueLabelDisplay="auto"
+							min={1}
+							max={12}
+							marks
+							step={1}
+							valueLabelFormat={formatSliderValue}
+							getAriaValueText={formatSliderValue}
+							aria-labelledby="month-range-slider"
 						/>
 					</Grid>
 
