@@ -92,17 +92,18 @@ function CatchRecords() {
 	const [pageSize, setPageSize] = useState(10);
 
 	useEffect(() => {
-		fetchDataForYear(year);
-	}, [year, page]); // Fetch data when the year changes
+		//fetchDataForYear(year);
+	}, [page, pageSize]); // Fetch data when the year changes
 
-	const fetchDataForYear = async (selectedYear) => {
+	const fetchDataForYear = async () => {
+		if (!year) {
+			console.error("Year is required");
+			return;
+		}
 		try {
 			const response = await fetch(
-				`http://localhost:4000/api/catchrecords/year?year=${selectedYear}&page=${page}&pageSize=${pageSize}`
+				`http://localhost:4000/api/catchrecords/year?year=${year}&page=${page}&pageSize=${pageSize}`
 			);
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
 			const fetchedData = await response.json();
 			setData(fetchedData);
 		} catch (error) {
@@ -162,6 +163,10 @@ function CatchRecords() {
 		setPage(0); // Reset to the first page whenever page size changes
 	};
 
+	const handleFetchDataForYear = () => {
+		fetchDataForYear(year); // Call fetchDataForYear with the current year state
+	};
+
 	const table = useReactTable({
 		data,
 		columns,
@@ -182,7 +187,7 @@ function CatchRecords() {
 					<Button
 						variant="contained"
 						color="primary"
-						onClick={() => fetchDataForYear(year)}>
+						onClick={handleFetchDataForYear}>
 						Fetch Data by Year
 					</Button>
 				</div>
