@@ -14,14 +14,19 @@ import {
 	Paper,
 	TextField,
 	Button,
+	FormControl,
+	InputLabel,
+	Select,
+	MenuItem,
 } from "@mui/material";
 
 function CatchRecords() {
 	const [data, setData] = useState([]);
 	const [year, setYear] = useState(new Date().getFullYear());
-
-	const [startDate, setStartDate] = useState("");
-	const [endDate, setEndDate] = useState("");
+	const [startMonth, setStartMonth] = useState("");
+	const [startYear, setStartYear] = useState("");
+	const [endMonth, setEndMonth] = useState("");
+	const [endYear, setEndYear] = useState("");
 
 	const columnHelper = createColumnHelper();
 	const columns = [
@@ -31,7 +36,7 @@ function CatchRecords() {
 		}),
 		columnHelper.accessor("vessel", {
 			header: "Vessel",
-			cell: (info) => info.getValue().name || "N/A", // Assuming the vessel object has a "name" property
+			cell: (info) => info.getValue().name || "N/A",
 		}),
 		columnHelper.accessor("area", {
 			header: "Area",
@@ -83,7 +88,6 @@ function CatchRecords() {
 		}),
 	];
 
-	//state variables to manage the pagination
 	const [page, setPage] = useState(0);
 	const [pageSize, setPageSize] = useState(10);
 
@@ -96,6 +100,9 @@ function CatchRecords() {
 			const response = await fetch(
 				`http://localhost:4000/api/catchrecords/year?year=${selectedYear}&page=${page}&pageSize=${pageSize}`
 			);
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
 			const fetchedData = await response.json();
 			setData(fetchedData);
 		} catch (error) {
@@ -105,7 +112,16 @@ function CatchRecords() {
 
 	const fetchDataByDateRange = async () => {
 		try {
-			const url = `http://localhost:4000/api/catchrecords/daterange?startDate=${startDate}&endDate=${endDate}&page=${page}&pageSize=${pageSize}`;
+			// Log the parameters
+			console.log("Parameters for fetching data:");
+			console.log("Start Month:", startMonth);
+			console.log("Start Year:", startYear);
+			console.log("End Month:", endMonth);
+			console.log("End Year:", endYear);
+			console.log("Page:", page);
+			console.log("Page Size:", pageSize);
+
+			const url = `http://localhost:4000/api/catchrecords/daterange?startMonth=${startMonth}&startYear=${startYear}&endMonth=${endMonth}&endYear=${endYear}&page=${page}&pageSize=${pageSize}`;
 			console.log("Fetching data from:", url);
 
 			const response = await fetch(url);
@@ -114,6 +130,7 @@ function CatchRecords() {
 			}
 
 			const fetchedData = await response.json();
+			console.log("Fetched Data:", fetchedData); // Log the fetched data
 			setData(fetchedData); // Update the table data state
 		} catch (error) {
 			console.error("Error fetching data:", error);
@@ -123,17 +140,26 @@ function CatchRecords() {
 	const handleYearChange = (event) => {
 		setYear(event.target.value);
 	};
+
+	const handleStartMonthChange = (event) => {
+		setStartMonth(event.target.value);
+	};
+
+	const handleStartYearChange = (event) => {
+		setStartYear(event.target.value);
+	};
+
+	const handleEndMonthChange = (event) => {
+		setEndMonth(event.target.value);
+	};
+
+	const handleEndYearChange = (event) => {
+		setEndYear(event.target.value);
+	};
+
 	const handlePageSizeChange = (event) => {
 		setPageSize(parseInt(event.target.value, 10));
 		setPage(0); // Reset to the first page whenever page size changes
-	};
-
-	const handleStartDateChange = (event) => {
-		setStartDate(event.target.value);
-	};
-
-	const handleEndDateChange = (event) => {
-		setEndDate(event.target.value);
 	};
 
 	const table = useReactTable({
@@ -150,7 +176,6 @@ function CatchRecords() {
 						label="Enter a year (YYYY)"
 						type="number"
 						value={year}
-						// the useEffect hook depends on the "year" state so it fetches data when the year changes
 						onChange={handleYearChange}
 						style={{ marginRight: "10px" }}
 					/>
@@ -158,30 +183,78 @@ function CatchRecords() {
 						variant="contained"
 						color="primary"
 						onClick={() => fetchDataForYear(year)}>
-						Fetch Data by year
+						Fetch Data by Year
 					</Button>
 				</div>
-				{/* New Section for Start and End Date */}
 				<div style={{ marginBottom: "20px" }}>
+					<FormControl style={{ marginRight: "10px", minWidth: 120 }}>
+						<InputLabel>Start Month</InputLabel>
+						<Select
+							value={startMonth}
+							onChange={handleStartMonthChange}
+							label="Start Month">
+							{[
+								"01",
+								"02",
+								"03",
+								"04",
+								"05",
+								"06",
+								"07",
+								"08",
+								"09",
+								"10",
+								"11",
+								"12",
+							].map((month) => (
+								<MenuItem
+									key={month}
+									value={month}>
+									{month}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 					<TextField
-						label="Enter start date"
-						type="date"
-						value={startDate}
-						onChange={handleStartDateChange}
-						InputLabelProps={{
-							shrink: true,
-						}}
+						label="Start Year (YYYY)"
+						type="number"
+						value={startYear}
+						onChange={handleStartYearChange}
 						style={{ marginRight: "10px" }}
 					/>
+					<FormControl style={{ marginRight: "10px", minWidth: 120 }}>
+						<InputLabel>End Month</InputLabel>
+						<Select
+							value={endMonth}
+							onChange={handleEndMonthChange}
+							label="End Month">
+							{[
+								"01",
+								"02",
+								"03",
+								"04",
+								"05",
+								"06",
+								"07",
+								"08",
+								"09",
+								"10",
+								"11",
+								"12",
+							].map((month) => (
+								<MenuItem
+									key={month}
+									value={month}>
+									{month}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 					<TextField
-						label="Enter end date"
-						type="date"
-						value={endDate}
-						onChange={handleEndDateChange}
-						InputLabelProps={{
-							shrink: true,
-						}}
-						style={{ marginRight: "10px" }}
+						label="End Year (YYYY)"
+						type="number"
+						value={endYear}
+						onChange={handleEndYearChange}
 					/>
 					<Button
 						variant="contained"
@@ -191,7 +264,6 @@ function CatchRecords() {
 					</Button>
 				</div>
 				<div>
-					{" "}
 					<select
 						value={pageSize}
 						onChange={handlePageSizeChange}>

@@ -11,17 +11,17 @@ mongoose.connect("mongodb://localhost:27017/bycatchDatabase", {
 });
 
 const years = [
-	2013,
-	// 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023,
+	2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023,
 ];
 
 years.forEach((year) => {
-	const results = []; // If processing each file separately, initialize results inside the loop
+	const results = [];
 	const csvFilePath = path.join(
 		__dirname,
 		"byCatchData",
 		`car270_psc_rates${year}.csv`
 	);
+
 	fs.createReadStream(csvFilePath)
 		.pipe(csv())
 		.on("data", (data) => results.push(data))
@@ -35,7 +35,7 @@ years.forEach((year) => {
 					);
 
 					const catchRecord = new CatchRecord({
-						weekEndDate: new Date(row["WEEK END DATE"]),
+						weekEndDate: row["WEEK END DATE"], // Keep as string
 						vessel: vessel._id,
 						area: row["AREA"],
 						gear: row["GEAR"],
@@ -58,6 +58,5 @@ years.forEach((year) => {
 			}
 
 			console.log(`CSV file for year ${year} successfully processed`);
-			// Do not disconnect here if you are processing multiple files
 		});
 });

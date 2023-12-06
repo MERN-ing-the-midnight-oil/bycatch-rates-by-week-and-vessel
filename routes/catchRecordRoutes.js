@@ -2,38 +2,93 @@
 
 const express = require("express");
 const router = express.Router();
-const CatchRecord = require("../src/models/catchRecordModel"); // Update the path as necessary
+const CatchRecord = require("../src/models/catchRecordModel");
 
-console.log(
-	"the CatchRecord imported from catchRecordModel.js to catchRecordRoutes.js is: ",
-	CatchRecord
-);
-// Get records by date range
-router.get("/catchrecords/daterange", async (req, res) => {
+router.get("/catchrecords/year", async (req, res) => {
 	try {
-		const { startDate, endDate, page = 0, pageSize = 10 } = req.query;
-		if (!startDate || !endDate) {
-			return res.status(400).send("Start date and end date are required");
+		const { year, page = 0, pageSize = 10 } = req.query;
+		if (!year) {
+			return res.status(400).send("Year is required");
 		}
 
-		// Convert startDate and endDate to Date objects
-		const start = new Date(startDate);
-		const end = new Date(endDate);
+		const yearShort = year.slice(-2); // Extract last two digits of the year
+		const regex = new RegExp(`.*${yearShort}$`); // Create a regex to match dates ending with the year
 
-		// Ensure valid date objects
-		if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-			return res.status(400).send("Invalid start date or end date");
-		}
-
-		// Calculate the number of records to skip based on the current page
 		const skipCount = Number(page) * Number(pageSize);
 
 		const records = await CatchRecord.find({
-			weekEndDate: { $gte: start, $lte: end },
+			weekEndDate: { $regex: regex },
 		})
-			.limit(Number(pageSize)) // Defines the number of records per page
-			.skip(skipCount) // Calculates the number of records to skip based on the current page
-			.populate("vessel", "name"); // Populate the 'vessel' field
+			.limit(Number(pageSize))
+			.skip(skipCount)
+			.populate("vessel", "name");
+
+		if (!records || records.length === 0) {
+			return res.status(404).send("No catch records found for the given year");
+		}
+		res.json(records);
+	} catch (error) {
+		console.error("Error in /catchrecords/year route:", error);
+		res.status(500).send("Internal Server Error");
+	}
+});
+
+//Getting catch records by month and date range.
+router.get("/catchrecords/daterange", async (req, res) => {
+	try {
+		const {
+			startMonth,
+			startYear,
+			endMonth,
+			endYear,
+			page = 0,
+			pageSize = 10,
+		} = req.query;
+
+		// Log received parameters
+		console.log("Received parameters:");
+		console.log("Start Month:", startMonth);
+		console.log("Start Year:", startYear);
+		console.log("End Month:", endMonth);
+		console.log("End Year:", endYear);
+		console.log("Page:", page);
+		console.log("Page Size:", pageSize);
+
+		if (!startMonth || !startYear || !endMonth || !endYear) {
+			return res.status(400).send("Start and end month and year are required");
+		}
+
+		// Convert 4-digit year to 2-digit format and construct date strings in YY/MM/DD format
+		const startYearShort = startYear.slice(-2);
+		const endYearShort = endYear.slice(-2);
+		const startDateStr = `${startYearShort}/${startMonth}/01`;
+		const endDateStr = `${endYearShort}/${endMonth}/01`;
+
+		// Log constructed date strings
+		console.log("Constructed Start Date String:", startDateStr);
+		console.log("Constructed End Date String:", endDateStr);
+
+		// Adjust endDateStr to the first day of the next month in YY/MM/DD format
+		const endDate = new Date(`${endYear}-${endMonth}-01`);
+		endDate.setMonth(endDate.getMonth() + 1);
+		const endMonthStr = ("0" + (endDate.getMonth() + 1)).slice(-2);
+		const adjustedEndYearStr = endDate.getFullYear().toString().slice(-2);
+		const adjustedEndDateStr = `${adjustedEndYearStr}/${endMonthStr}/01`;
+
+		// Log adjusted end date string
+		console.log("Adjusted End Date String:", adjustedEndDateStr);
+
+		const skipCount = Number(page) * Number(pageSize);
+
+		const records = await CatchRecord.find({
+			weekEndDate: {
+				$gte: startDateStr,
+				$lt: adjustedEndDateStr,
+			},
+		})
+			.limit(Number(pageSize))
+			.skip(skipCount)
+			.populate("vessel", "name");
 
 		if (!records || records.length === 0) {
 			return res
@@ -43,38 +98,6 @@ router.get("/catchrecords/daterange", async (req, res) => {
 		res.json(records);
 	} catch (error) {
 		console.error("Error in /catchrecords/daterange route:", error);
-		res.status(500).send("Internal Server Error");
-	}
-});
-
-//get records by year
-router.get("/catchrecords/year", async (req, res) => {
-	try {
-		const { year, page = 0, pageSize = 10 } = req.query;
-		if (!year) {
-			return res.status(400).send("Year is required");
-		}
-
-		// Convert year to a Date range
-		const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
-		const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
-
-		// Calculate the number of records to skip based on the current page
-		const skipCount = Number(page) * Number(pageSize);
-
-		const records = await CatchRecord.find({
-			weekEndDate: { $gte: startDate, $lte: endDate },
-		})
-			.limit(Number(pageSize)) // Defines the number of records per page
-			.skip(skipCount) // Calculates the number of records to skip based on the current page
-			.populate("vessel", "name"); // Populate the 'vessel' field
-
-		if (!records || records.length === 0) {
-			return res.status(404).send("No catch records found for the given year");
-		}
-		res.json(records);
-	} catch (error) {
-		console.error("Error in catchrecords/year route:", error);
 		res.status(500).send("Internal Server Error");
 	}
 });
