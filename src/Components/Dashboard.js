@@ -21,12 +21,18 @@ function Dashboard() {
 
 	return (
 		<div>
-			<h1>NOAA fisheries BSAI/GOA Bycatch Rates Dashboard and visualizer</h1>
-
+			<div style={{ textAlign: "center" }}>
+				<h1>NOAA fisheries BSAI/GOA Bycatch Rates Widget</h1>
+				<img
+					src="https://cdn.midjourney.com/ea93088a-3701-47ef-b68b-2711c280f77d/0_0.webp"
+					style={{ width: "auto", height: 200 }}
+					alt="A fishing trawler enmeshed in a fractally network of data points"
+				/>
+			</div>
 			<h2>
-				View Catch Records By Year or Date Range (2013-2023){" "}
+				View All Catch Records By Year or Date Range (2013-2023){" "}
 				<button onClick={toggleCatchDataVisibility}>
-					{showCatchData ? "Hide Catch Records" : "Show Catch Records"}
+					{showCatchData ? "Hide This Feature" : "Show This Feature"}
 				</button>
 			</h2>
 			{showCatchData && (
@@ -34,13 +40,10 @@ function Dashboard() {
 					<CatchDataComponent />
 				</div>
 			)}
-
 			<h2>
-				Create Multi-year Bycatch Comparisons by Vessel and Species{" "}
+				Create Multi-year Bycatch Comparisons by Fishing Vessel and Species{" "}
 				<button onClick={toggleBycatchBySeasonVisibility}>
-					{showBycatchBySeason
-						? "Hide Bycatch Comparisons"
-						: "Show Bycatch Comparisons"}
+					{showBycatchBySeason ? "Hide This Feature" : "Show This Feature"}
 				</button>
 			</h2>
 			<p>
@@ -51,7 +54,27 @@ function Dashboard() {
 				<div>
 					<BycatchBySeason />
 				</div>
-			)}
+			)}{" "}
+			<div>
+				<h2
+					style={{
+						position: "absolute",
+						bottom: 0,
+						width: "100%",
+						textAlign: "center",
+						margin: 0,
+					}}>
+					{
+						"All 'bycatch rates by week and vessel' data used by this widget are from "
+					}
+					<a
+						href="https://www.fisheries.noaa.gov/alaska/commercial-fishing/fisheries-catch-and-landings-reports-alaska#bsai-prohibited-species"
+						target="_blank"
+						rel="noopener noreferrer">
+						this NOAA website.
+					</a>
+				</h2>
+			</div>
 		</div>
 	);
 }

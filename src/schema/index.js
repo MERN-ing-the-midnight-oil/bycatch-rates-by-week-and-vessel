@@ -13,10 +13,6 @@ const resolvers = {
 		...require("../resolvers/vesselResolvers").Query,
 		...require("../resolvers/catchRecordResolvers").Query,
 	},
-	Mutation: {
-		...require("../resolvers/vesselResolvers").Mutation,
-		...require("../resolvers/catchRecordResolvers").Mutation,
-	},
 	// You can also add resolvers for custom types if needed
 };
 

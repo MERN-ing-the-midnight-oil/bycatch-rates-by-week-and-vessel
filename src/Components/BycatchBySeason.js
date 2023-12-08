@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, useLazyQuery, gql } from "@apollo/client";
 import {
 	Select,
 	MenuItem,
@@ -8,12 +8,10 @@ import {
 	Paper,
 	Grid,
 	Button,
-	TextField,
 	Slider,
 	Typography,
 } from "@mui/material";
 
-// GraphQL query to get all vessels
 const GET_ALL_VESSELS = gql`
 	query GetAllVessels {
 		getAllVessels {
@@ -23,15 +21,66 @@ const GET_ALL_VESSELS = gql`
 	}
 `;
 
+const GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE = gql`
+	query GetRecordsByVesselAndMonthRange(
+		$startMonth: Int!
+		$endMonth: Int!
+		$vesselName: String
+	) {
+		getRecordsByVesselAndMonthRange(
+			startMonth: $startMonth
+			endMonth: $endMonth
+			vesselName: $vesselName
+		) {
+			id
+			weekEndDate
+			vessel {
+				name
+			}
+			area
+			gear
+			target
+			halibut
+			herring
+			redKingCrab
+			otherKingCrab
+			bairdiTanner
+			otherTanner
+			chinook
+			nonChinook
+			sampledHauls
+		}
+	}
+`;
+
 function BycatchBySeason() {
 	const [vesselName, setVesselName] = useState("");
-	const [targetSpecies, setTargetSpecies] = useState("");
-	const [startDate, setStartDate] = useState("");
-	const [endDate, setEndDate] = useState("");
-	const [bycatchSpecies, setBycatchSpecies] = useState("");
 	const [vessels, setVessels] = useState([]);
+	const [startMonth, setStartMonth] = useState(1);
+	const [endMonth, setEndMonth] = useState(12);
 
-	const [monthRange, setMonthRange] = useState([1, 12]);
+	const [
+		getRecords,
+		{ loading: queryLoading, data: queryData, error: queryError },
+	] = useLazyQuery(GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE);
+
+	useEffect(() => {
+		if (queryData) {
+			console.log("Fetched Data:", queryData);
+			// Additional logic to handle fetched data
+		}
+	}, [queryData]);
+
+	const handleSubmit = (event) => {
+		event.preventDefault();
+		getRecords({
+			variables: {
+				startMonth,
+				endMonth,
+				vesselName,
+			},
+		});
+	};
 
 	const formatSliderValue = (value) => {
 		const monthNames = [
@@ -59,32 +108,14 @@ function BycatchBySeason() {
 		}
 	}, [data]);
 
-	// Target species options
-	const targetOptions = [
-		"A Atka mackerel BSAI,GOA",
-		"B Pollock - bottom* BSAI,GOA",
-		"C Pacific cod BSAI,GOA",
-		// ... include all other options here
-	];
-	const bycatchOptions = [
-		"HALIBUT",
-		"HERRING",
-		"RED KING CRAB",
-		"OTHER KING CRAB",
-		"BAIRDI TANNER",
-		"OTHER TANNER",
-		"CHINOOK",
-		"NON-CHINOOK",
-	];
-
-	const handleSubmit = (event) => {
-		event.preventDefault();
-		// Handle form submission
-		console.log({ vesselName, bycatchSpecies, targetSpecies });
-	};
-
 	return (
 		<Paper style={{ padding: "20px", margin: "20px 0" }}>
+			{/* Show loading indicator when query is in progress */}
+			{queryLoading && <div>Loading...</div>}
+
+			{/* Display error message if query fails */}
+			{queryError && <div>Error: {queryError.message}</div>}
+
 			<form onSubmit={handleSubmit}>
 				<Grid
 					container
@@ -111,48 +142,6 @@ function BycatchBySeason() {
 						</FormControl>
 					</Grid>
 
-					{/* Target Species Dropdown */}
-					<Grid
-						item
-						xs={12}
-						md={6}>
-						<FormControl fullWidth>
-							<InputLabel>Target Species</InputLabel>
-							<Select
-								value={targetSpecies}
-								label="Target Species"
-								onChange={(e) => setTargetSpecies(e.target.value)}>
-								{targetOptions.map((option, index) => (
-									<MenuItem
-										key={index}
-										value={option}>
-										{option}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-					</Grid>
-					{/* Bycatch Species Dropdown */}
-					<Grid
-						item
-						xs={12}
-						md={6}>
-						<FormControl fullWidth>
-							<InputLabel>Bycatch Species</InputLabel>
-							<Select
-								value={bycatchSpecies}
-								label="Bycatch Species"
-								onChange={(e) => setBycatchSpecies(e.target.value)}>
-								{bycatchOptions.map((option, index) => (
-									<MenuItem
-										key={index}
-										value={option}>
-										{option}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-					</Grid>
 					{/* Month Range Slider */}
 					<Grid
 						item
@@ -163,8 +152,11 @@ function BycatchBySeason() {
 							Select Month Range
 						</Typography>
 						<Slider
-							value={monthRange}
-							onChange={(event, newValue) => setMonthRange(newValue)}
+							value={[startMonth, endMonth]}
+							onChange={(event, newValue) => {
+								setStartMonth(newValue[0]);
+								setEndMonth(newValue[1]);
+							}}
 							valueLabelDisplay="auto"
 							min={1}
 							max={12}
