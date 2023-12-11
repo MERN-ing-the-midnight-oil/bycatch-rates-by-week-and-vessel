@@ -14,14 +14,15 @@ type CatchRecord {
 	target: String
 	halibut: Float
 	herring: Float
-	redKingCrab: Int
-	otherKingCrab: Int
-	bairdiTanner: Int
-	otherTanner: Int
-	chinook: Int
-	nonChinook: Int
-	sampledHauls: Int
+	redKingCrab: Float
+	otherKingCrab: Float
+	bairdiTanner: Float
+	otherTanner: Float
+	chinook: Float
+	nonChinook: Float
+	sampledHauls: Float
 }
+
 type Query {
 	getAllVessels: [Vessel!]!
 	getVesselById(id: ID!): Vessel

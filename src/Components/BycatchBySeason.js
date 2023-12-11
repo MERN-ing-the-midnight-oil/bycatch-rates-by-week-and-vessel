@@ -32,7 +32,6 @@ const GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE = gql`
 			endMonth: $endMonth
 			vesselName: $vesselName
 		) {
-			id
 			weekEndDate
 			vessel {
 				name
@@ -73,6 +72,11 @@ function BycatchBySeason() {
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
+		console.log("Submitting with variables:", {
+			startMonth,
+			endMonth,
+			vesselName,
+		});
 		getRecords({
 			variables: {
 				startMonth,
