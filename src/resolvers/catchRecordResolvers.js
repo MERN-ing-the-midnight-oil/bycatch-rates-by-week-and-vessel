@@ -26,15 +26,19 @@ const catchRecordResolvers = {
 					throw new Error("Vessel not found");
 				}
 
-				// Fetch catch records for the specified vessel and month range
-				return await CatchRecord.find({
+				// Fetch records where the month of weekEndDate falls within the specified range
+				const records = await CatchRecord.find({
 					vessel: vessel._id,
-					// Add logic to filter by month range
-					// This will depend on the format of your 'weekEndDate' field and how the months are represented
 				}).populate("vessel");
+
+				// Filter records based on month range
+				return records.filter((record) => {
+					const month = parseInt(record.weekEndDate.split("/")[1], 10);
+					return month >= startMonth && month <= endMonth;
+				});
 			} catch (error) {
-				console.error("Error fetching catch records:", error);
-				throw new Error("Error fetching catch records");
+				console.error(`Error fetching catch records:`, error);
+				throw new Error(`Error fetching catch records`);
 			}
 		},
 	},
