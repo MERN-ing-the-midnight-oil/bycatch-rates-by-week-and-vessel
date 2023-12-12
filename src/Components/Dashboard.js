@@ -1,22 +1,22 @@
 import React, { useState } from "react";
-import CatchDataComponent from "./CatchDataComponent"; // Adjust the path as necessary
-import BycatchBySeason from "./BycatchBySeason";
+import RecordsByYear from "./RecordsByYear"; // Adjust the path as necessary
+import RecordsBySeason from "./RecordsBySeason";
 
 function Dashboard() {
-	// State to control the visibility of CatchDataComponent which is not shown by default
+	// State to control the visibility of RecordsByYear which is not shown by default
 	const [showCatchData, setShowCatchData] = useState(false);
 
-	// State to control the visibility of BycatchBySeason
-	const [showBycatchBySeason, setShowBycatchBySeason] = useState(false);
+	// State to control the visibility of RecordsBySeason
+	const [showRecordsBySeason, setShowRecordsBySeason] = useState(false);
 
-	// Function to toggle the visibility of CatchDataComponent
+	// Function to toggle the visibility of RecordsByYear
 	const toggleCatchDataVisibility = () => {
 		setShowCatchData(!showCatchData);
 	};
 
-	// Function to toggle the visibility of BycatchBySeason
-	const toggleBycatchBySeasonVisibility = () => {
-		setShowBycatchBySeason(!showBycatchBySeason);
+	// Function to toggle the visibility of RecordsBySeason
+	const toggleRecordsBySeasonVisibility = () => {
+		setShowRecordsBySeason(!showRecordsBySeason);
 	};
 
 	return (
@@ -29,7 +29,7 @@ function Dashboard() {
 					alt="A fishing trawler enmeshed in a fractally network of data points"
 				/>
 			</div>
-			<h2>
+			<h2 title="uses RESTful API calls">
 				View All Catch Records By Year or Date Range (2013-2023){" "}
 				<button onClick={toggleCatchDataVisibility}>
 					{showCatchData ? "Hide This Feature" : "Show This Feature"}
@@ -37,22 +37,22 @@ function Dashboard() {
 			</h2>
 			{showCatchData && (
 				<div>
-					<CatchDataComponent />
+					<RecordsByYear />
 				</div>
 			)}
-			<h2>
-				Create Multi-year Bycatch Comparisons by Fishing Vessel and Species{" "}
-				<button onClick={toggleBycatchBySeasonVisibility}>
-					{showBycatchBySeason ? "Hide This Feature" : "Show This Feature"}
+			<h2 title="uses graphql API calls">
+				Catch Records by vessel name and season (month range){" "}
+				<button onClick={toggleRecordsBySeasonVisibility}>
+					{showRecordsBySeason ? "Hide This Feature" : "Show This Feature"}
 				</button>
 			</h2>
 			<p>
-				{showBycatchBySeason &&
+				{showRecordsBySeason &&
 					"Use this visualizer to compare year-to-year bycatch rates for a specific fishing vessel."}
 			</p>
-			{showBycatchBySeason && (
+			{showRecordsBySeason && (
 				<div>
-					<BycatchBySeason />
+					<RecordsBySeason />
 				</div>
 			)}{" "}
 			<div>
