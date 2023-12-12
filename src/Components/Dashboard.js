@@ -20,50 +20,53 @@ function Dashboard() {
 	};
 
 	return (
-		<div>
-			<div style={{ textAlign: "center" }}>
-				<h1>NOAA fisheries BSAI/GOA Bycatch Rates Widget</h1>
-				<img
-					src="https://cdn.midjourney.com/ea93088a-3701-47ef-b68b-2711c280f77d/0_0.webp"
-					style={{ width: "auto", height: 200 }}
-					alt="A fishing trawler enmeshed in a fractally network of data points"
-				/>
+		<div
+			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+			<div style={{ flex: "1" }}>
+				{/* Header and Image */}
+				<div style={{ textAlign: "center" }}>
+					<h1>NOAA fisheries BSAI/GOA Bycatch Rates Widget</h1>
+					<img
+						src="https://cdn.midjourney.com/ea93088a-3701-47ef-b68b-2711c280f77d/0_0.webp"
+						style={{ width: "auto", height: 200 }}
+						alt="A fishing trawler enmeshed in a fractally network of data points"
+					/>
+				</div>
+
+				{/* First Feature */}
+				<h2 title="uses RESTful API calls">
+					View All Catch Records By Year or Date Range (2013-2023){" "}
+					<button onClick={toggleCatchDataVisibility}>
+						{showCatchData ? "Hide This Feature" : "Show This Feature"}
+					</button>
+				</h2>
+				{showCatchData && (
+					<div>
+						<RecordsByYear />
+					</div>
+				)}
+
+				{/* Second Feature */}
+				<h2 title="uses graphql API calls">
+					Catch Records by vessel name and season (month range){" "}
+					<button onClick={toggleRecordsBySeasonVisibility}>
+						{showRecordsBySeason ? "Hide This Feature" : "Show This Feature"}
+					</button>
+				</h2>
+				<p>
+					{showRecordsBySeason &&
+						"Use this visualizer to compare year-to-year bycatch rates for a specific fishing vessel."}
+				</p>
+				{showRecordsBySeason && (
+					<div>
+						<RecordsBySeason />
+					</div>
+				)}
 			</div>
-			<h2 title="uses RESTful API calls">
-				View All Catch Records By Year or Date Range (2013-2023){" "}
-				<button onClick={toggleCatchDataVisibility}>
-					{showCatchData ? "Hide This Feature" : "Show This Feature"}
-				</button>
-			</h2>
-			{showCatchData && (
-				<div>
-					<RecordsByYear />
-				</div>
-			)}
-			<h2 title="uses graphql API calls">
-				Catch Records by vessel name and season (month range){" "}
-				<button onClick={toggleRecordsBySeasonVisibility}>
-					{showRecordsBySeason ? "Hide This Feature" : "Show This Feature"}
-				</button>
-			</h2>
-			<p>
-				{showRecordsBySeason &&
-					"Use this visualizer to compare year-to-year bycatch rates for a specific fishing vessel."}
-			</p>
-			{showRecordsBySeason && (
-				<div>
-					<RecordsBySeason />
-				</div>
-			)}{" "}
-			<div>
-				<h2
-					style={{
-						position: "absolute",
-						bottom: 0,
-						width: "100%",
-						textAlign: "center",
-						margin: 0,
-					}}>
+
+			{/* Footer */}
+			<footer style={{ textAlign: "center", margin: "10px 0" }}>
+				<h2>
 					{
 						"All 'bycatch rates by week and vessel' data used by this widget are from "
 					}
@@ -74,7 +77,7 @@ function Dashboard() {
 						this NOAA website.
 					</a>
 				</h2>
-			</div>
+			</footer>
 		</div>
 	);
 }
