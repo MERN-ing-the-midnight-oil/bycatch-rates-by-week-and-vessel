@@ -17,7 +17,7 @@ const catchRecordResolvers = {
 		},
 		getRecordsByVesselAndMonthRange: async (
 			_,
-			{ startMonth, endMonth, vesselName }
+			{ startMonth, endMonth, vesselName, page = 0, pageSize = 10 }
 		) => {
 			try {
 				// Find the vessel by name
@@ -30,12 +30,18 @@ const catchRecordResolvers = {
 				const records = await CatchRecord.find({
 					vessel: vessel._id,
 				}).populate("vessel");
-
 				// Filter records based on month range
-				return records.filter((record) => {
+				const filteredRecords = records.filter((record) => {
 					const month = parseInt(record.weekEndDate.split("/")[1], 10);
 					return month >= startMonth && month <= endMonth;
 				});
+
+				// Implement Pagination
+				const startIndex = page * pageSize;
+				const endIndex = startIndex + pageSize;
+				const paginatedRecords = filteredRecords.slice(startIndex, endIndex);
+
+				return paginatedRecords;
 			} catch (error) {
 				console.error(`Error fetching catch records:`, error);
 				throw new Error(`Error fetching catch records`);

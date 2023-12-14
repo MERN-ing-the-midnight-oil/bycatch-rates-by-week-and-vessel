@@ -37,11 +37,15 @@ const GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE = gql`
 		$startMonth: Int!
 		$endMonth: Int!
 		$vesselName: String
+		$page: Int
+		$pageSize: Int
 	) {
 		getRecordsByVesselAndMonthRange(
 			startMonth: $startMonth
 			endMonth: $endMonth
 			vesselName: $vesselName
+			page: $page
+			pageSize: $pageSize
 		) {
 			weekEndDate
 			vessel {
@@ -71,12 +75,38 @@ function RecordsBySeason() {
 	const [endMonth, setEndMonth] = useState(12);
 	const [page, setPage] = useState(0);
 	const [pageSize, setPageSize] = useState(10);
+	const handlePageSizeChange = (event) => {
+		setPageSize(event.target.value);
+		setPage(0); // Reset to the first page whenever page size changes
+	};
 
+	// 	The first useEffect is responsible for triggering the fetchData function whenever the page state changes.
+	// The second useEffect watches for changes in queryData and updates your component's data state accordingly.
+	// This ensures that every time the page number changes, a new query is made with the updated page value, and the component's state is updated when new data is fetched.
 	const [
 		getRecords,
 		{ loading: queryLoading, data: queryData, error: queryError },
 	] = useLazyQuery(GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE);
 
+	// Function to fetch data
+	const fetchData = () => {
+		getRecords({
+			variables: {
+				startMonth,
+				endMonth,
+				vesselName,
+				page,
+				pageSize,
+			},
+		});
+	};
+
+	// Fetch data when component mounts and when 'page' changes
+	useEffect(() => {
+		fetchData();
+	}, [page]);
+
+	// Update the data when new query data is received
 	useEffect(() => {
 		if (queryData && queryData.getRecordsByVesselAndMonthRange) {
 			setData(queryData.getRecordsByVesselAndMonthRange);
@@ -157,6 +187,8 @@ function RecordsBySeason() {
 				startMonth,
 				endMonth,
 				vesselName,
+				page,
+				pageSize,
 			},
 		});
 	};
@@ -253,7 +285,6 @@ function RecordsBySeason() {
 						</Grid>
 					</Grid>
 				</form>
-
 				<Table>
 					<TableHead>
 						{table.getHeaderGroups().map((headerGroup) => (
@@ -287,7 +318,56 @@ function RecordsBySeason() {
 						))}
 					</TableBody>
 				</Table>
-				{/* Pagination and other components */}
+				{data && data.length > 0 && (
+					<div
+						style={{
+							marginTop: "20px",
+							display: "flex",
+							justifyContent: "space-between",
+						}}>
+						{/* Optionally, display current page and total records here */}
+					</div>
+				)}{" "}
+				<div
+					style={{
+						marginTop: "20px",
+						display: "flex",
+						justifyContent: "space-between",
+					}}>
+					{/* Page Size Selector */}
+					<FormControl>
+						<InputLabel id="page-size-label">Page Size</InputLabel>
+						<Select
+							labelId="page-size-label"
+							value={pageSize}
+							onChange={handlePageSizeChange}>
+							{[10, 20, 30, 50].map((size) => (
+								<MenuItem
+									key={size}
+									value={size}>
+									{size}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+
+					{/* Pagination Buttons */}
+					<div>
+						<Button
+							variant="contained"
+							onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+							disabled={page === 0}>
+							Previous Page
+						</Button>
+						<Button
+							variant="contained"
+							style={{ marginLeft: "10px" }}
+							onClick={() => setPage((prev) => prev + 1)}>
+							Next Page
+						</Button>
+						{/* Optionally, display current page and total records here */}
+					</div>
+				</div>
 			</Paper>
 		</div>
 	);

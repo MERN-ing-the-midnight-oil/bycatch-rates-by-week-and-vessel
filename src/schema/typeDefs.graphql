@@ -30,6 +30,8 @@ type Query {
 		startMonth: Int!
 		endMonth: Int!
 		vesselName: String
+		page: Int
+		pageSize: Int
 	): [CatchRecord]
 	getCatchRecords: [CatchRecord!]!
 }
