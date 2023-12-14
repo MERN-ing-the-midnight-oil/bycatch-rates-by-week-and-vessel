@@ -55,7 +55,7 @@ function Dashboard() {
 				</h2>
 				<p>
 					{showRecordsBySeason &&
-						"Use this visualizer to compare year-to-year bycatch rates for a specific fishing vessel."}
+						"Use this visualizer to compare a vessel's year-to-year catch records by time of year."}
 				</p>
 				{showRecordsBySeason && (
 					<div>

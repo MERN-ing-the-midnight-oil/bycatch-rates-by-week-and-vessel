@@ -75,6 +75,8 @@ function RecordsBySeason() {
 	const [endMonth, setEndMonth] = useState(12);
 	const [page, setPage] = useState(0);
 	const [pageSize, setPageSize] = useState(10);
+	const [isTableVisible, setIsTableVisible] = useState(true);
+
 	const handlePageSizeChange = (event) => {
 		setPageSize(event.target.value);
 		setPage(0); // Reset to the first page whenever page size changes
@@ -215,6 +217,10 @@ function RecordsBySeason() {
 		onCompleted: (data) => setVessels(data.getAllVessels),
 	});
 
+	const toggleTableVisibility = () => {
+		setIsTableVisible(!isTableVisible);
+	};
+
 	return (
 		<div>
 			<Paper style={{ margin: "20px", padding: "20px", overflowX: "auto" }}>
@@ -285,39 +291,47 @@ function RecordsBySeason() {
 						</Grid>
 					</Grid>
 				</form>
-				<Table>
-					<TableHead>
-						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => (
-									<TableCell
-										key={header.id}
-										style={{ fontWeight: "bold" }}>
-										{flexRender(
-											header.column.columnDef.header,
-											header.getContext()
-										)}
-									</TableCell>
+				{/* Conditional Rendering of the Table */}
+				{isTableVisible && (
+					<>
+						<Table>
+							<TableHead>
+								{table.getHeaderGroups().map((headerGroup) => (
+									<TableRow key={headerGroup.id}>
+										{headerGroup.headers.map((header) => (
+											<TableCell
+												key={header.id}
+												style={{ fontWeight: "bold" }}>
+												{flexRender(
+													header.column.columnDef.header,
+													header.getContext()
+												)}
+											</TableCell>
+										))}
+									</TableRow>
 								))}
-							</TableRow>
-						))}
-					</TableHead>
-					<TableBody>
-						{table.getRowModel().rows.map((row, rowIndex) => (
-							<TableRow
-								key={row.id}
-								style={{
-									backgroundColor: rowIndex % 2 === 0 ? "#f7f7f7" : "white",
-								}}>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id}>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
+							</TableHead>
+							<TableBody>
+								{table.getRowModel().rows.map((row, rowIndex) => (
+									<TableRow
+										key={row.id}
+										style={{
+											backgroundColor: rowIndex % 2 === 0 ? "#f7f7f7" : "white",
+										}}>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell key={cell.id}>
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext()
+												)}
+											</TableCell>
+										))}
+									</TableRow>
 								))}
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+							</TableBody>
+						</Table>
+					</>
+				)}
 				{data && data.length > 0 && (
 					<div
 						style={{
@@ -353,6 +367,14 @@ function RecordsBySeason() {
 
 					{/* Pagination Buttons */}
 					<div>
+						{/* Toggle Table Visibility Button */}
+						<Button
+							variant="contained"
+							color="primary"
+							onClick={toggleTableVisibility}
+							style={{ marginBottom: "10px" }}>
+							{isTableVisible ? "Hide Table" : "Show Table"}
+						</Button>
 						<Button
 							variant="contained"
 							onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
