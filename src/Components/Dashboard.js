@@ -1,24 +1,33 @@
 import React, { useState } from "react";
 import RecordsByYear from "./RecordsByYear"; // Adjust the path as necessary
 import RecordsBySeason from "./RecordsBySeason";
+import RecordsBySeasonChart from "./RecordsBySeasonChart"; // Adjust the path as necessary
 
 function Dashboard() {
-	// State to control the visibility of RecordsByYear which is not shown by default
+	// State to control the visibility of RecordsByYear (not shown by default)
 	const [showCatchData, setShowCatchData] = useState(false);
-
-	// State to control the visibility of RecordsBySeason
-	const [showRecordsBySeason, setShowRecordsBySeason] = useState(false);
 
 	// Function to toggle the visibility of RecordsByYear
 	const toggleCatchDataVisibility = () => {
 		setShowCatchData(!showCatchData);
 	};
 
+	// State to control the visibility of RecordsBySeason (not shown by default)
+	const [showRecordsBySeason, setShowRecordsBySeason] = useState(false);
+
 	// Function to toggle the visibility of RecordsBySeason
 	const toggleRecordsBySeasonVisibility = () => {
 		setShowRecordsBySeason(!showRecordsBySeason);
 	};
 
+	// State to control the visibility of the third feature, RecordsBySeasonChart (not shown by default)
+	const [showRecordsBySeasonChart, setShowRecordsBySeasonChart] =
+		useState(false);
+
+	// Function to toggle the visibility of RecordsBySeasonChart
+	const toggleRecordsBySeasonChartVisibility = () => {
+		setShowRecordsBySeasonChart(!showRecordsBySeasonChart);
+	};
 	return (
 		<div
 			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -60,6 +69,24 @@ function Dashboard() {
 				{showRecordsBySeason && (
 					<div>
 						<RecordsBySeason />
+					</div>
+				)}
+				{/* Third Feature */}
+				<h2 title="Charting catch records by vessel name and season">
+					Charting Catch Records by Vessel Name and Season{" "}
+					<button onClick={toggleRecordsBySeasonChartVisibility}>
+						{showRecordsBySeasonChart
+							? "Hide This Feature"
+							: "Show This Feature"}
+					</button>
+				</h2>
+				<p>
+					{showRecordsBySeasonChart &&
+						"Explore the catch records in a chart format to visualize trends and comparisons over time."}
+				</p>
+				{showRecordsBySeasonChart && (
+					<div>
+						<RecordsBySeasonChart />
 					</div>
 				)}
 			</div>

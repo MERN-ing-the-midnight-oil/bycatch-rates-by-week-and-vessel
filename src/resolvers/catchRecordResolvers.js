@@ -1,5 +1,3 @@
-//Resolvers handle the the fetching of data for fields in a query.  One for each field in the GraphQL schema.
-
 const CatchRecord = require("../models/catchRecordModel");
 const Vessel = require("../models/VesselModel");
 
@@ -7,7 +5,6 @@ const catchRecordResolvers = {
 	Query: {
 		// Fetch a limited number of catch records
 		getCatchRecords: async (_, { limit = 10 }) => {
-			// Default limit to 10 if not specified
 			try {
 				return await CatchRecord.find({}).limit(limit).populate("vessel");
 			} catch (error) {
@@ -22,17 +19,21 @@ const catchRecordResolvers = {
 			try {
 				// Find the vessel by name
 				const vessel = await Vessel.findOne({ name: vesselName });
-				if (!vessel) {
-					throw new Error("Vessel not found");
-				}
+				// if (!vessel) {
+				// 	throw new Error("Vessel not found");
+				// }
 
-				// Fetch records where the month of weekEndDate falls within the specified range
-				const records = await CatchRecord.find({
-					vessel: vessel._id,
-				}).populate("vessel");
+				// Fetch and sort records for the specified vessel
+				const records = await CatchRecord.find({ vessel: vessel._id })
+					.sort({ weekEndDate: 1 }) // Sort by weekEndDate in ascending order
+					.populate("vessel");
+
 				// Filter records based on month range
 				const filteredRecords = records.filter((record) => {
-					const month = parseInt(record.weekEndDate.split("/")[1], 10);
+					const dateParts = record.weekEndDate.split("/");
+					const year = parseInt(dateParts[0], 10);
+					const month = parseInt(dateParts[1], 10);
+
 					return month >= startMonth && month <= endMonth;
 				});
 
@@ -43,8 +44,40 @@ const catchRecordResolvers = {
 
 				return paginatedRecords;
 			} catch (error) {
-				console.error(`Error fetching catch records:`, error);
+				console.error(`Error fetching catch records: ${error}`);
 				throw new Error(`Error fetching catch records`);
+			}
+		},
+
+		getRecordsForChartByVesselAndMonthRange: async (
+			_,
+			{ startMonth, endMonth, vesselName }
+		) => {
+			try {
+				// Find the vessel by name
+				const vessel = await Vessel.findOne({ name: vesselName });
+				if (!vessel) {
+					throw new Error("Vessel not found");
+				}
+
+				// Fetch all records for the specified vessel without pagination
+				const records = await CatchRecord.find({ vessel: vessel._id })
+					.sort({ weekEndDate: 1 }) // Sort by weekEndDate in ascending order
+					.populate("vessel");
+
+				// Filter records based on month range
+				const filteredRecords = records.filter((record) => {
+					const dateParts = record.weekEndDate.split("/");
+					const year = parseInt(dateParts[0], 10);
+					const month = parseInt(dateParts[1], 10);
+
+					return month >= startMonth && month <= endMonth;
+				});
+
+				return filteredRecords;
+			} catch (error) {
+				console.error(`Error fetching catch records for chart: ${error}`);
+				throw new Error(`Error fetching catch records for chart`);
 			}
 		},
 	},

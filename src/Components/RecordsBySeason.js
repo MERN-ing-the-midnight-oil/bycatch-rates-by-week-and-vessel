@@ -36,7 +36,7 @@ const GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE = gql`
 	query GetRecordsByVesselAndMonthRange(
 		$startMonth: Int!
 		$endMonth: Int!
-		$vesselName: String
+		$vesselName: String!
 		$page: Int
 		$pageSize: Int
 	) {

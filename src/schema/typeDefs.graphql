@@ -29,9 +29,14 @@ type Query {
 	getRecordsByVesselAndMonthRange(
 		startMonth: Int!
 		endMonth: Int!
-		vesselName: String
+		vesselName: String!
 		page: Int
 		pageSize: Int
 	): [CatchRecord]
 	getCatchRecords: [CatchRecord!]!
+	getRecordsForChartByVesselAndMonthRange(
+		startMonth: Int!
+		endMonth: Int!
+		vesselName: String!
+	): [CatchRecord]
 }
