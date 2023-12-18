@@ -27,7 +27,23 @@ import {
 	Legend,
 } from "recharts";
 
+const getYearMonthFromDateString = (dateStr) => {
+	const match = dateStr.match(/^(\d{2})\/(\d{1,2})/);
+	if (match) {
+		return {
+			year: 2000 + parseInt(match[1], 10), // Convert YY to YYYY
+			month: parseInt(match[2], 10),
+		};
+	}
+	return null;
+};
+
 const transformDataForCharts = (rawData, startMonth, endMonth) => {
+	if (!rawData) {
+		console.error("Raw data is undefined in transformDataForCharts");
+		return {};
+	}
+	console.log("Transforming Data", rawData);
 	const speciesList = [
 		"halibut",
 		"herring",
@@ -38,21 +54,9 @@ const transformDataForCharts = (rawData, startMonth, endMonth) => {
 		"chinook",
 		"nonChinook",
 	];
-	const transformed = {};
 
-	const getYearMonthFromDateString = (dateStr) => {
-		const match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{2})/);
-		return match
-			? {
-					year: 2000 + parseInt(match[1], 10),
-					month: parseInt(match[2], 10),
-					day: parseInt(match[3], 10),
-			  }
-			: null;
-	};
-
-	speciesList.forEach((species) => {
-		transformed[species] = {};
+	const transformed = speciesList.reduce((acc, species) => {
+		acc[species] = {};
 
 		rawData.forEach((record) => {
 			const dateInfo = getYearMonthFromDateString(record.weekEndDate);
@@ -62,16 +66,18 @@ const transformDataForCharts = (rawData, startMonth, endMonth) => {
 				dateInfo.month <= endMonth
 			) {
 				const yearKey = dateInfo.year.toString();
-				if (!transformed[species][yearKey]) {
-					transformed[species][yearKey] = [];
+				if (!acc[species][yearKey]) {
+					acc[species][yearKey] = [];
 				}
-				transformed[species][yearKey].push({
+				acc[species][yearKey].push({
 					weekEndDate: record.weekEndDate,
 					catchValue: record[species] || 0,
 				});
 			}
 		});
-	});
+
+		return acc;
+	}, {});
 
 	return transformed;
 };
@@ -91,7 +97,7 @@ const GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE = gql`
 	query getRecordsForChartByVesselAndMonthRange(
 		$startMonth: Int!
 		$endMonth: Int!
-		$vesselName: String
+		$vesselName: String!
 	) {
 		getRecordsForChartByVesselAndMonthRange(
 			startMonth: $startMonth
@@ -120,11 +126,11 @@ const GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE = gql`
 
 //THE COMPONENT
 const RecordsBySeasonChart = () => {
-	const [data, setData] = useState([]);
 	const [vesselName, setVesselName] = useState("");
 	const [vessels, setVessels] = useState([]);
 	const [startMonth, setStartMonth] = useState(1);
 	const [endMonth, setEndMonth] = useState(12);
+	const [dataBySpecies, setDataBySpecies] = useState({});
 
 	// Fetch vessels list for drop down menu
 	const { loading: loadingVessels, data: vesselsData } =
@@ -153,16 +159,20 @@ const RecordsBySeasonChart = () => {
 		];
 		return monthNames[value - 1];
 	};
-	//useLazyQuery is used to define the getRecords function, The query will be executed when handleSubmit is called when the user clicks submit.
-	const [getRecords, { loading, data: queryData, error }] = useLazyQuery(
+	// useLazyQuery for fetching records
+	const [getRecords, { loading, error }] = useLazyQuery(
 		GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE,
 		{
+			//callback of the gql query
 			onCompleted: (data) => {
-				console.log(
-					"Raw Data returned by GET_RECORDS:",
-					data.getRecordsByVesselAndMonthRange
+				console.log("Data received:", data);
+				const transformedData = transformDataForCharts(
+					data.getRecordsForChartByVesselAndMonthRange,
+					startMonth,
+					endMonth
 				);
-				setData(data.getRecordsByVesselAndMonthRange);
+				console.log("Transformed Data for Charts:", transformedData);
+				setDataBySpecies(transformedData);
 			},
 			onError: (error) => {
 				console.error("GraphQL Query Error:", error);
@@ -170,28 +180,13 @@ const RecordsBySeasonChart = () => {
 		}
 	);
 
-	// State to hold the transformed data for charts
-	const [dataBySpecies, setDataBySpecies] = useState({});
-
-	// useEffect to transform data for charts
-	useEffect(() => {
-		if (queryData && queryData.getRecordsByVesselAndMonthRange) {
-			const transformedData = transformDataForCharts(
-				queryData.getRecordsByVesselAndMonthRange,
-				startMonth,
-				endMonth
-			);
-			console.log("Transformed Data:", transformedData);
-			setDataBySpecies(transformedData);
-		}
-	}, [queryData, startMonth, endMonth]);
-
 	// Event handler for the "Submit" button
 	const handleSubmit = () => {
 		console.log("Submitting query with the following parameters:");
 		console.log("Vessel Name:", vesselName);
 		console.log("Start Month:", startMonth);
 		console.log("End Month:", endMonth);
+
 		getRecords({
 			variables: {
 				startMonth,
@@ -216,6 +211,9 @@ const RecordsBySeasonChart = () => {
 
 	return (
 		<div>
+			{loading && <p>Loading...</p>}
+			{error && <p>Error: {error.message}</p>}
+
 			<Typography variant="h6">Catch Records by Season</Typography>
 
 			{/* Vessel Drop Down Menu */}
