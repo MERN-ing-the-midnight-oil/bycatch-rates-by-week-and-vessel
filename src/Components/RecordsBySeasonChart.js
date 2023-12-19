@@ -31,18 +31,14 @@ const getYearMonthFromDateString = (dateStr) => {
 	const match = dateStr.match(/^(\d{2})\/(\d{1,2})/);
 	if (match) {
 		return {
-			year: 2000 + parseInt(match[1], 10), // Convert YY to YYYY
+			year: 2000 + parseInt(match[1], 10), // Adjusting for YY format
 			month: parseInt(match[2], 10),
 		};
 	}
-	return null;
+	return null; // Return null or an appropriate default if the date string doesn't match
 };
 
 const transformDataForCharts = (rawData, startMonth, endMonth) => {
-	if (!rawData) {
-		console.error("Raw data is undefined in transformDataForCharts");
-		return {};
-	}
 	console.log("Transforming Data", rawData);
 	const speciesList = [
 		"halibut",
@@ -54,7 +50,6 @@ const transformDataForCharts = (rawData, startMonth, endMonth) => {
 		"chinook",
 		"nonChinook",
 	];
-
 	const transformed = speciesList.reduce((acc, species) => {
 		acc[species] = {};
 
@@ -281,7 +276,6 @@ const RecordsBySeasonChart = () => {
 					<LineChart
 						width={600}
 						height={300}
-						data={dataBySpecies[species]}
 						margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
 						<CartesianGrid strokeDasharray="3 3" />
 						<XAxis dataKey="weekEndDate" />
@@ -292,8 +286,9 @@ const RecordsBySeasonChart = () => {
 							<Line
 								key={year}
 								type="monotone"
-								dataKey={`${year}.catchValue`}
-								stroke={yearColorMapping[year] || "#000000"} // Fallback to a default color if year is not in the mapping
+								data={dataBySpecies[species][year]}
+								dataKey="catchValue"
+								stroke={yearColorMapping[year] || "#000000"} // Ensure yearColorMapping is defined
 								name={`Year ${year}`}
 							/>
 						))}
