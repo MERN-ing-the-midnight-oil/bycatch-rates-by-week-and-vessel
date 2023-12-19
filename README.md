@@ -1,76 +1,58 @@
-TODO: Use TanStack (React-Table) to display data in a sortable and filterable format.
+# NOAA fisheries BSAI/GOA Bycatch Rates Widget
 
-TODO: create a large form and create controlled form components with a custom hook
+## Overview
 
-TODO: user can submit to win an "award" for having the least bycatch in a particular year, they can apply as a vessel. There are all kinds of "awards" they can apply for , by species, by year, by season, by location, etc. Then my code can verify if they "won" by revealing their ranking given their desired parameters.
+A full stack MERN web application that uses GraphQL for efficient data handling and a responsive user interface. The application is divided into three main features:
 
-# Getting Started with Create React App
+1. **View All Catch Records By Year or Date Range**
+2. **Catch Records by Vessel Name and Season**
+3. **Charting Catch Records by Vessel Name and Season**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Features
 
-## Available Scripts
+### 1. View All Catch Records By Year or Date Range
 
-In the project directory, you can run:
+Allows users to view catch records over specific years or date ranges. It uses **RESTful API calls** to fetch and display data that was downloaded from a NOAA website.
 
-### `npm start`
+### 2. Catch Records by Vessel Name and Season
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This feature enables users to view catch records for specific vessels within chosen month ranges. It uses **GraphQL API** calls to query and present the data.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 3. Charting Catch Records by Vessel Name and Season
 
-### `npm test`
+#### Feature Overview
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+This component uses Apollo Client for GraphQL data fetching, Material-UI for the user interface, and Recharts for chart rendering.
 
-### `npm run build`
+#### Functionality and Features
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Dynamic Data Fetching**: The component uses GraphQL queries to fetch data based on user input. It retrieves catch records for a specified vessel over a selected month range associated with all years.
+- **Custom Data Transformation**: The `transformDataForCharts` function takes the raw data fetched with my query and formats it to make it palatable to the **recharts library**. This function takes the raw collection of catch records for a vessel and creates an array of species specific records that each contain an array of year specific records that each contain an array of MM/DD dates and catch amount. This allows the chart to display the desired side-by-side across year comparisons of bycatch for a requested time of year.
+- **Interactive Chart Visualization and User Interface**: The component uses the Recharts library to render line charts. Each chart corresponds to a different species, with lines representing catch records over different years. It also uses Material-UI components for sliders and dropdown menus for user input.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+#### Technical Highlights
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **React Patterns**: The component uses React hooks such as useState, useEffect, and useLazyQuery from Apollo Client.
+- **State Management and Propagation**: It manages state to synchronize user input with data fetching and chart rendering.
 
-### `npm run eject`
+### Frontend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The frontend is built with React, offering a dynamic and responsive user experience. Key aspects include:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **State Management**: Utilizes React's useState and useEffect hooks for managing component states and side effects.
+- **Data Fetching**: Uses Apollo Client to make GraphQL queries (`useQuery` and `useLazyQuery`) and handle data fetching.
+- **UI Components**: Employs Material-UI components for styling and layout, ensuring a modern and user-friendly interface.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Backend
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+The backend is implemented using Node.js and GraphQL. It handles data storage and retrieval, offering the following functionalities:
 
-## Learn More
+- **GraphQL Schema**: Defines the structure of the data and the queries/mutations available.
+- **Resolvers**: Implements the logic for responding to GraphQL queries, interacting with the MongoDB database.
+- **Database Models**: Utilizes Mongoose models to represent and interact with data in MongoDB.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### GraphQL API
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The application's data handling is powered by GraphQL, providing efficient and flexible data retrieval. Key points include:
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- **Queries**: GraphQL queries are used to fetch data based on specific requirements, like vessel names, date ranges, etc.

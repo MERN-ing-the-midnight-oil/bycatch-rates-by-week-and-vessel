@@ -95,7 +95,7 @@ function Dashboard() {
 			<footer style={{ textAlign: "center", margin: "10px 0" }}>
 				<h2>
 					{
-						"All 'bycatch rates by week and vessel' data used by this widget are from "
+						"All data used by this widget are from the `bycatch rates by week and vessel' section of "
 					}
 					<a
 						href="https://www.fisheries.noaa.gov/alaska/commercial-fishing/fisheries-catch-and-landings-reports-alaska#bsai-prohibited-species"
