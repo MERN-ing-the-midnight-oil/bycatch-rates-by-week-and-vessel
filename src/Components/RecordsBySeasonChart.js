@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 
-// Apollo Client imports for GraphQL data fetching
 import { useQuery, gql, useLazyQuery } from "@apollo/client";
 
-// Material-UI components for UI elements
 import {
 	FormControl,
 	InputLabel,
@@ -16,7 +14,6 @@ import {
 	Button,
 } from "@mui/material";
 
-// Recharts for charting
 import {
 	LineChart,
 	Line,
@@ -28,14 +25,15 @@ import {
 } from "recharts";
 
 const getYearMonthFromDateString = (dateStr) => {
-	const match = dateStr.match(/^(\d{2})\/(\d{1,2})/);
+	const match = dateStr.match(/^(\d{2})\/(\d{1,2})\/(\d{1,2})/);
 	if (match) {
 		return {
-			year: 2000 + parseInt(match[1], 10), // Adjusting for YY format
+			year: 2000 + parseInt(match[1], 10),
 			month: parseInt(match[2], 10),
+			day: parseInt(match[3], 10),
 		};
 	}
-	return null; // Return null or an appropriate default if the date string doesn't match
+	return null;
 };
 
 const transformDataForCharts = (rawData, startMonth, endMonth) => {
@@ -60,12 +58,16 @@ const transformDataForCharts = (rawData, startMonth, endMonth) => {
 				dateInfo.month >= startMonth &&
 				dateInfo.month <= endMonth
 			) {
-				const yearKey = dateInfo.year.toString();
+				const yearKey = dateInfo.year;
+				const normalizedDate = new Date(
+					`2000-${dateInfo.month}-${dateInfo.day}`
+				).getTime(); // Use fixed year
+
 				if (!acc[species][yearKey]) {
 					acc[species][yearKey] = [];
 				}
 				acc[species][yearKey].push({
-					weekEndDate: record.weekEndDate,
+					normalizedDate,
 					catchValue: record[species] || 0,
 				});
 			}
@@ -78,7 +80,6 @@ const transformDataForCharts = (rawData, startMonth, endMonth) => {
 };
 
 // Defining my GraphQL queries, nearly the same as in RecordsBySeason
-
 const GET_ALL_VESSELS = gql`
 	query GetAllVessels {
 		getAllVessels {
@@ -203,7 +204,11 @@ const RecordsBySeasonChart = () => {
 		2022: "#4bc0c0", // Sky Blue
 		2023: "#9966ff", // Magenta
 	};
-
+	//dateFormatter used by Xaxis
+	const dateFormatter = (timestamp) => {
+		const date = new Date(timestamp);
+		return `${date.getMonth() + 1}/${date.getDate()}`; // Convert back to MM/DD format
+	};
 	return (
 		<div>
 			{loading && <p>Loading...</p>}
@@ -278,20 +283,33 @@ const RecordsBySeasonChart = () => {
 						height={300}
 						margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
 						<CartesianGrid strokeDasharray="3 3" />
-						<XAxis dataKey="weekEndDate" />
+						<XAxis
+							dataKey="normalizedDate"
+							tickFormatter={dateFormatter}
+							type="number"
+							domain={["dataMin", "dataMax"]}
+						/>
 						<YAxis />
 						<Tooltip />
 						<Legend />
-						{Object.keys(dataBySpecies[species]).map((year) => (
-							<Line
-								key={year}
-								type="monotone"
-								data={dataBySpecies[species][year]}
-								dataKey="catchValue"
-								stroke={yearColorMapping[year] || "#000000"} // Ensure yearColorMapping is defined
-								name={`Year ${year}`}
-							/>
-						))}
+						{Object.keys(dataBySpecies[species]).map((year) => {
+							// Sort the data for this year
+							const sortedData = [...dataBySpecies[species][year]].sort(
+								(a, b) => a.normalizedDate - b.normalizedDate
+							);
+							console.log(`Sorted Data for ${species} ${year}:`, sortedData);
+
+							return (
+								<Line
+									key={year}
+									type="monotone"
+									data={sortedData}
+									dataKey="catchValue"
+									stroke={yearColorMapping[year] || "#000000"}
+									name={`Year ${year}`}
+								/>
+							);
+						})}
 					</LineChart>
 				</Paper>
 			))}
