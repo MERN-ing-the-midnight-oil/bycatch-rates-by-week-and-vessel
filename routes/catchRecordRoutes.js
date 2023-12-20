@@ -7,12 +7,15 @@ const CatchRecord = require("../src/models/catchRecordModel");
 router.get("/catchrecords/year", async (req, res) => {
 	try {
 		const { year, page = 0, pageSize = 10 } = req.query;
+		console.log("/catchrecords/year route is being used"); // Log route usage
+		console.log("Year being queried:", year); // Log the year being queried
+
 		if (!year) {
 			return res.status(400).send("Year is required");
 		}
 
 		const yearShort = year.slice(-2); // Extract last two digits of the year
-		const regex = new RegExp(`.*${yearShort}$`); // Create a regex to match dates ending with the year
+		const regex = new RegExp(`^${yearShort}`); // Create a regex to match dates starting with the year
 
 		const skipCount = Number(page) * Number(pageSize);
 
@@ -26,6 +29,9 @@ router.get("/catchrecords/year", async (req, res) => {
 		if (!records || records.length === 0) {
 			return res.status(404).send("No catch records found for the given year");
 		}
+
+		console.log("First record returned:", records[0]); // Log the first record returned
+
 		res.json(records);
 	} catch (error) {
 		console.error("Error in /catchrecords/year route:", error);
