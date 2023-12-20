@@ -44,7 +44,6 @@ router.get("/catchrecords/year", async (req, res) => {
 // Getting catch records by month and date range.
 router.get("/catchrecords/daterange", async (req, res) => {
 	try {
-		// Extract query parameters
 		const {
 			startMonth,
 			startYear,
@@ -54,75 +53,77 @@ router.get("/catchrecords/daterange", async (req, res) => {
 			pageSize = 10,
 		} = req.query;
 
+		// Log received parameters
+		console.log("Received parameters in daterange route:");
+		console.log("Start Month:", startMonth);
+		console.log("Start Year:", startYear);
+		console.log("End Month:", endMonth);
+		console.log("End Year:", endYear);
+		console.log("Page:", page);
+		console.log("Page Size:", pageSize);
+
 		// Validate input parameters
 		if (!startMonth || !startYear || !endMonth || !endYear) {
+			console.log(
+				"Validation Error: Start and end month and year are required"
+			);
 			return res
 				.status(400)
 				.json({ error: "Start and end month and year are required" });
 		}
 
-		// Convert input dates to JavaScript Date objects
-		const startDate = new Date(
-			`${startYear}-${startMonth.padStart(2, "0")}-01`
-		);
-		let endDate = new Date(`${endYear}-${endMonth.padStart(2, "0")}-01`);
-		endDate.setMonth(endDate.getMonth() + 1); // Move to the first day of the next month
+		// Convert 4-digit year to 2-digit format and construct date strings in YY/MM/DD format
+		const startYearShort = startYear.slice(-2);
+		const endYearShort = endYear.slice(-2);
+		const startDateStr = `${startYearShort}/${startMonth}/01`;
+
+		let adjustedEndDateStr;
+
+		if (startYear === endYear && startMonth === endMonth) {
+			// If the date range is within the same month and year
+			const endDate = new Date(`${endYear}-${endMonth}-01`);
+			endDate.setMonth(endDate.getMonth() + 1, 0); // Set to the last day of the month
+			const endMonthStr = ("0" + (endDate.getMonth() + 1)).slice(-2);
+			const adjustedEndYearStr = endDate.getFullYear().toString().slice(-2);
+			adjustedEndDateStr = `${adjustedEndYearStr}/${endMonthStr}/${endDate.getDate()}`;
+		} else {
+			// Original logic for different months or years
+			const endDate = new Date(`${endYear}-${endMonth}-01`);
+			endDate.setMonth(endDate.getMonth() + 1);
+			const endMonthStr = ("0" + (endDate.getMonth() + 1)).slice(-2);
+			const adjustedEndYearStr = endDate.getFullYear().toString().slice(-2);
+			adjustedEndDateStr = `${adjustedEndYearStr}/${endMonthStr}/01`;
+		}
+
+		// Log the query parameters
+		console.log("Querying database with:", {
+			startDate: startDateStr,
+			endDate: adjustedEndDateStr,
+			skipCount: Number(page) * Number(pageSize),
+			pageSize: Number(pageSize),
+		});
 
 		const skipCount = Number(page) * Number(pageSize);
 
-		// Aggregation pipeline for querying the records
-		const aggregationPipeline = [
-			{
-				// Step 1: Correct the date format by prepending '20' to the year
-				$addFields: {
-					correctedDate: {
-						$concat: ["20", "$weekEndDate"], // Prepend '20' to the existing date string
-					},
-				},
+		const records = await CatchRecord.find({
+			weekEndDate: {
+				$gte: startDateStr,
+				$lt: adjustedEndDateStr,
 			},
-			{
-				// Step 2: Convert the corrected string to a date object
-				$addFields: {
-					convertedDate: {
-						$dateFromString: {
-							dateString: "$correctedDate",
-							format: "%Y/%m/%d", // Using a four-digit year format
-						},
-					},
-				},
-			},
-			{
-				// Step 3: Filter documents based on the converted date
-				$match: {
-					convertedDate: {
-						$gte: startDate, // startDate should be a JavaScript Date object
-						$lt: endDate, // endDate should be a JavaScript Date object
-					},
-				},
-			},
-			{
-				// Step 4: Skip documents for pagination
-				$skip: skipCount,
-			},
-			{
-				// Step 5: Limit the number of documents
-				$limit: Number(pageSize),
-			},
-			// Add additional stages if necessary
-		];
+		})
+			.limit(Number(pageSize))
+			.skip(skipCount)
+			.populate("vessel", "name");
 
-		// Execute the aggregation pipeline
-		const records = await CatchRecord.aggregate(aggregationPipeline);
-
-		// Handle the case where no records are found
 		if (!records || records.length === 0) {
+			console.log("No catch records found for the given date range");
 			return res.status(200).json({
 				message: "No catch records found for the given date range",
 				data: [],
 			});
 		}
 
-		// Return the found records
+		console.log(`Found ${records.length} records`);
 		res.json({ message: "Success", data: records });
 	} catch (error) {
 		console.error("Error in /catchrecords/daterange route:", error);

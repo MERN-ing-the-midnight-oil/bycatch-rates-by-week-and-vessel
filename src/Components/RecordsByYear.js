@@ -28,6 +28,8 @@ function CatchRecords() {
 	const [endMonth, setEndMonth] = useState("");
 	const [endYear, setEndYear] = useState("");
 
+	const [isFetchingByYear, setIsFetchingByYear] = useState(true); // flag to indicate fetch mode to prevent pagination from triggering fetching by year innapropriately
+
 	const columnHelper = createColumnHelper();
 	const columns = [
 		columnHelper.accessor("weekEndDate", {
@@ -92,8 +94,10 @@ function CatchRecords() {
 	const [pageSize, setPageSize] = useState(10);
 
 	useEffect(() => {
-		fetchDataForYear(year);
-	}, [page, pageSize]); // Fetch data when the year changes
+		if (isFetchingByYear) {
+			fetchDataForYear(year);
+		}
+	}, [year, page, pageSize, isFetchingByYear]);
 
 	const fetchDataForYear = async () => {
 		if (!year) {
@@ -112,29 +116,71 @@ function CatchRecords() {
 	};
 
 	const fetchDataByDateRange = async () => {
+		setIsFetchingByYear(false); // Set flag to false when fetching by date range
+
 		try {
-			// Log the parameters
+			// Log current page and pageSize values before fetching
+			console.log(
+				"Before fetching by date range - Page:",
+				page,
+				"PageSize:",
+				pageSize
+			);
+
+			// Log the parameters for fetching data
 			console.log("Parameters for fetching data:");
 			console.log("Start Month:", startMonth);
 			console.log("Start Year:", startYear);
 			console.log("End Month:", endMonth);
 			console.log("End Year:", endYear);
-			console.log("Page:", page);
-			console.log("Page Size:", pageSize);
 
 			const url = `http://localhost:4000/api/catchrecords/daterange?startMonth=${startMonth}&startYear=${startYear}&endMonth=${endMonth}&endYear=${endYear}&page=${page}&pageSize=${pageSize}`;
 			console.log("Fetching data from:", url);
 
 			const response = await fetch(url);
+			const responseJson = await response.json();
+
+			// Log the entire response
+			console.log("Response from the server:", responseJson);
+
 			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
+				throw new Error(
+					`HTTP error! status: ${response.status}. Message: ${
+						responseJson.error || responseJson.message
+					}`
+				);
 			}
 
-			const fetchedData = await response.json();
-			console.log("Fetched Data:", fetchedData); // Log the fetched data
-			setData(fetchedData); // Update the table data state
+			// Log Fetched Data
+			console.log("Fetched Data:", responseJson);
+
+			// Check and log if data is an array
+			if (Array.isArray(responseJson)) {
+				console.log("Response is an array with length:", responseJson.length);
+			} else {
+				console.log(
+					"Response is not an array, actual type:",
+					typeof responseJson
+				);
+			}
+
+			// Set data with the response data
+			setData(responseJson.data);
+			if (responseJson.data.length === 0) {
+				alert(responseJson.message); // Alert if no data found
+			}
+
+			// Log current page and pageSize values after fetching
+			console.log(
+				"After fetching by date range - Page:",
+				page,
+				"PageSize:",
+				pageSize
+			);
 		} catch (error) {
 			console.error("Error fetching data:", error);
+			alert(error.message);
+			// Handle the error appropriately in your UI, e.g., set an error state and display it
 		}
 	};
 
@@ -164,7 +210,8 @@ function CatchRecords() {
 	};
 
 	const handleFetchDataForYear = () => {
-		fetchDataForYear(year); // Call fetchDataForYear with the current year state
+		setIsFetchingByYear(true); // Set flag to true when fetching by year
+		fetchDataForYear(year);
 	};
 
 	const table = useReactTable({
