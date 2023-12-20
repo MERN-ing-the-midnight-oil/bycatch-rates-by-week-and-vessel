@@ -92,7 +92,7 @@ function CatchRecords() {
 	const [pageSize, setPageSize] = useState(10);
 
 	useEffect(() => {
-		//fetchDataForYear(year);
+		fetchDataForYear(year);
 	}, [page, pageSize]); // Fetch data when the year changes
 
 	const fetchDataForYear = async () => {
