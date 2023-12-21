@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const CatchRecordSchema = new mongoose.Schema({
 	weekEndDate: {
-		type: String,
+		type: Date,
 		required: true,
 	},
 	vessel: {

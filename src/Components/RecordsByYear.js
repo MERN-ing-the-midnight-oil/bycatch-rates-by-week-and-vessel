@@ -94,10 +94,15 @@ function CatchRecords() {
 	const [pageSize, setPageSize] = useState(10);
 
 	useEffect(() => {
-		if (isFetchingByYear) {
-			fetchDataForYear(year);
+		if (data.length > 0) {
+			// Check if initial data has been fetched
+			if (isFetchingByYear) {
+				fetchDataForYear();
+			} else {
+				fetchDataByDateRange();
+			}
 		}
-	}, [year, page, pageSize, isFetchingByYear]);
+	}, [page, pageSize]);
 
 	const fetchDataForYear = async () => {
 		if (!year) {
@@ -108,6 +113,12 @@ function CatchRecords() {
 			const response = await fetch(
 				`http://localhost:4000/api/catchrecords/year?year=${year}&page=${page}&pageSize=${pageSize}`
 			);
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(`Error fetching data: ${response.status} ${errorText}`);
+			}
+
 			const fetchedData = await response.json();
 			setData(fetchedData);
 		} catch (error) {
@@ -210,10 +221,28 @@ function CatchRecords() {
 	};
 
 	const handleFetchDataForYear = () => {
-		setIsFetchingByYear(true); // Set flag to true when fetching by year
+		setIsFetchingByYear(true);
+		console.log(
+			"Fetching data for year:",
+			year,
+			"Page:",
+			page,
+			"PageSize:",
+			pageSize
+		);
 		fetchDataForYear(year);
 	};
+	const handleNextPage = () => {
+		const nextPage = page + 1;
+		console.log("Next Page:", nextPage);
+		setPage(nextPage);
+	};
 
+	const handlePreviousPage = () => {
+		const prevPage = Math.max(page - 1, 0);
+		console.log("Previous Page:", prevPage);
+		setPage(prevPage);
+	};
 	const table = useReactTable({
 		data,
 		columns,
@@ -363,11 +392,11 @@ function CatchRecords() {
 				</Table>
 				<div>
 					<button
-						onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+						onClick={handlePreviousPage}
 						disabled={page === 0}>
 						Previous Page
 					</button>
-					<button onClick={() => setPage((prev) => prev + 1)}>Next Page</button>
+					<button onClick={handleNextPage}>Go to the Next Page</button>
 				</div>
 			</Paper>
 		</div>
