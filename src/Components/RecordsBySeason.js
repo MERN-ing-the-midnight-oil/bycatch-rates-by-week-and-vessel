@@ -22,6 +22,7 @@ import {
 	TableHead,
 	TableRow,
 } from "@mui/material";
+import { format } from "date-fns";
 
 const GET_ALL_VESSELS = gql`
 	query GetAllVessels {
@@ -92,6 +93,13 @@ function RecordsBySeason() {
 
 	// Function to fetch data
 	const fetchData = () => {
+		console.log("Fetching data with variables:", {
+			startMonth,
+			endMonth,
+			vesselName,
+			page,
+			pageSize,
+		});
 		getRecords({
 			variables: {
 				startMonth,
@@ -119,7 +127,17 @@ function RecordsBySeason() {
 	const columns = [
 		columnHelper.accessor("weekEndDate", {
 			header: "Week End Date",
-			cell: (info) => info.getValue(),
+			cell: (info) => {
+				const dateStr = info.getValue();
+				try {
+					// Parse the ISO date string and format it
+					const date = new Date(dateStr);
+					return format(date, "PPP"); // e.g., "April 29, 2023"
+				} catch (error) {
+					console.error("Error formatting date:", error);
+					return dateStr; // Fallback to the original string in case of an error
+				}
+			},
 		}),
 		columnHelper.accessor((row) => row.vessel.name, {
 			id: "vessel",
@@ -184,6 +202,13 @@ function RecordsBySeason() {
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
+		console.log("Submitting query with variables:", {
+			startMonth,
+			endMonth,
+			vesselName,
+			page,
+			pageSize,
+		});
 		getRecords({
 			variables: {
 				startMonth,
@@ -223,6 +248,8 @@ function RecordsBySeason() {
 
 	return (
 		<div>
+			{queryError && <div>Error: {queryError.message}</div>}
+
 			<Paper style={{ margin: "20px", padding: "20px", overflowX: "auto" }}>
 				{loading && <div>Loading vessels...</div>}
 				{error && <div>Error: {error.message}</div>}

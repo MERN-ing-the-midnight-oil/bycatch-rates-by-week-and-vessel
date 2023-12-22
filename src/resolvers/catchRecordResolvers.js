@@ -3,46 +3,53 @@ const Vessel = require("../models/VesselModel");
 
 const catchRecordResolvers = {
 	Query: {
-		// Fetch a limited number of catch records
-		getCatchRecords: async (_, { limit = 10 }) => {
-			try {
-				return await CatchRecord.find({}).limit(limit).populate("vessel");
-			} catch (error) {
-				console.error("Error fetching catch records:", error);
-				throw new Error("Error fetching catch records");
-			}
-		},
 		getRecordsByVesselAndMonthRange: async (
 			_,
 			{ startMonth, endMonth, vesselName, page = 0, pageSize = 10 }
 		) => {
 			try {
-				// Find the vessel by name
+				console.log(
+					`Received query with parameters: startMonth=${startMonth}, endMonth=${endMonth}, vesselName=${vesselName}, page=${page}, pageSize=${pageSize}`
+				);
+
 				const vessel = await Vessel.findOne({ name: vesselName });
-				// if (!vessel) {
-				// 	throw new Error("Vessel not found");
-				// }
+				if (!vessel) {
+					throw new Error("Vessel not found");
+				}
 
-				// Fetch and sort records for the specified vessel
-				const records = await CatchRecord.find({ vessel: vessel._id })
-					.sort({ weekEndDate: 1 }) // Sort by weekEndDate in ascending order
-					.populate("vessel");
+				const currentYear = new Date().getFullYear(); // You can adjust this based on your requirements
+				const startDate = new Date(currentYear, startMonth - 1, 1);
+				const endDate = new Date(currentYear, endMonth, 0);
 
-				// Filter records based on month range
-				const filteredRecords = records.filter((record) => {
-					const dateParts = record.weekEndDate.split("/");
-					const year = parseInt(dateParts[0], 10);
-					const month = parseInt(dateParts[1], 10);
+				const records = await CatchRecord.find({
+					vessel: vessel._id,
+					weekEndDate: {
+						$gte: startDate,
+						$lte: endDate,
+					},
+				})
+					.sort({ weekEndDate: 1 })
+					.populate("vessel")
+					.skip(page * pageSize)
+					.limit(pageSize)
+					.lean(); // Using .lean() for performance optimization
 
-					return month >= startMonth && month <= endMonth;
+				// Convert Date objects to strings
+				records.forEach((record) => {
+					record.weekEndDate = record.weekEndDate.toISOString().split("T")[0]; // Format as 'YYYY-MM-DD'
 				});
+				// Log the first and last fetched records
+				if (records.length > 0) {
+					console.log("First fetched record:");
+					console.log(records[0]);
 
-				// Implement Pagination
-				const startIndex = page * pageSize;
-				const endIndex = startIndex + pageSize;
-				const paginatedRecords = filteredRecords.slice(startIndex, endIndex);
+					console.log("Last fetched record:");
+					console.log(records[records.length - 1]);
+				} else {
+					console.log("No records found.");
+				}
 
-				return paginatedRecords;
+				return records;
 			} catch (error) {
 				console.error(`Error fetching catch records: ${error}`);
 				throw new Error(`Error fetching catch records`);
@@ -54,35 +61,52 @@ const catchRecordResolvers = {
 			{ startMonth, endMonth, vesselName }
 		) => {
 			try {
-				// Find the vessel by name
 				const vessel = await Vessel.findOne({ name: vesselName });
 				if (!vessel) {
 					throw new Error("Vessel not found");
 				}
 
-				// Fetch all records for the specified vessel without pagination
-				const records = await CatchRecord.find({ vessel: vessel._id })
-					.sort({ weekEndDate: 1 }) // Sort by weekEndDate in ascending order
-					.populate("vessel");
+				const currentYear = new Date().getFullYear();
+				const startDate = new Date(currentYear, startMonth - 1, 1);
+				const endDate = new Date(currentYear, endMonth, 0);
 
-				// Filter records based on month range
-				const filteredRecords = records.filter((record) => {
-					const dateParts = record.weekEndDate.split("/");
-					const year = parseInt(dateParts[0], 10);
-					const month = parseInt(dateParts[1], 10);
+				const records = await CatchRecord.find({
+					vessel: vessel._id,
+					weekEndDate: {
+						$gte: startDate,
+						$lte: endDate,
+					},
+				})
+					.sort({ weekEndDate: 1 })
+					.populate("vessel")
+					.lean(); // Using .lean() for performance optimization
 
-					return month >= startMonth && month <= endMonth;
+				// Convert Date objects to strings
+				records.forEach((record) => {
+					record.weekEndDate = record.weekEndDate.toISOString().split("T")[0]; // Format as 'YYYY-MM-DD'
 				});
 
-				return filteredRecords;
+				return records;
 			} catch (error) {
 				console.error(`Error fetching catch records for chart: ${error}`);
 				throw new Error(`Error fetching catch records for chart`);
 			}
 		},
+		getAllVessels: async () => {
+			try {
+				// Fetch all vessels and sort them by name in ascending order
+				const vessels = await Vessel.find().sort({ name: 1 }).lean();
+				return vessels.map((vessel) => ({
+					id: vessel._id.toString(),
+					name: vessel.name,
+				}));
+			} catch (error) {
+				console.error(`Error fetching vessels: ${error}`);
+				throw new Error(`Error fetching vessels`);
+			}
+		},
 	},
 	CatchRecord: {
-		// Resolver for the vessel field in CatchRecord if it's a reference
 		vessel: async (catchRecord) => {
 			try {
 				return await Vessel.findById(catchRecord.vessel);
