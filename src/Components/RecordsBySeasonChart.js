@@ -24,16 +24,18 @@ import {
 	Legend,
 } from "recharts";
 
-const getYearMonthFromDateString = (dateStr) => {
-	const match = dateStr.match(/^(\d{2})\/(\d{1,2})\/(\d{1,2})/);
-	if (match) {
-		return {
-			year: 2000 + parseInt(match[1], 10),
-			month: parseInt(match[2], 10),
-			day: parseInt(match[3], 10),
-		};
+const getYearMonthFromDateString = (timestampString) => {
+	// Convert the string to a number and then to a date
+	const date = new Date(Number(timestampString));
+	if (isNaN(date.getTime())) {
+		console.error(`Invalid timestamp: ${timestampString}`);
+		return { year: NaN, month: NaN, day: NaN };
 	}
-	return null;
+	return {
+		year: date.getFullYear(),
+		month: date.getMonth() + 1, // JavaScript months are 0-indexed
+		day: date.getDate(),
+	};
 };
 
 const transformDataForCharts = (rawData, startMonth, endMonth) => {
@@ -48,33 +50,35 @@ const transformDataForCharts = (rawData, startMonth, endMonth) => {
 		"chinook",
 		"nonChinook",
 	];
-	const transformed = speciesList.reduce((acc, species) => {
-		acc[species] = {};
 
-		rawData.forEach((record) => {
-			const dateInfo = getYearMonthFromDateString(record.weekEndDate);
-			if (
-				dateInfo &&
-				dateInfo.month >= startMonth &&
-				dateInfo.month <= endMonth
-			) {
-				const yearKey = dateInfo.year;
-				const normalizedDate = new Date(
-					`2000-${dateInfo.month}-${dateInfo.day}`
-				).getTime(); // Use fixed year
+	const transformed = {};
 
-				if (!acc[species][yearKey]) {
-					acc[species][yearKey] = [];
+	// Initialize species data structure
+	speciesList.forEach((species) => {
+		transformed[species] = {};
+	});
+
+	rawData.forEach((record) => {
+		const { year, month, day } = getYearMonthFromDateString(record.weekEndDate);
+		console.log(`Processing record for year: ${year}, month: ${month}`); // Debug log
+
+		if (month >= startMonth && month <= endMonth) {
+			speciesList.forEach((species) => {
+				const catchValuel = record[species] || 0;
+				console.log(`Catch value for ${species} in ${year}: ${catchValuel}`); // Debug log
+
+				// Initialize year array if it doesn't exist
+				if (!transformed[species][year]) {
+					transformed[species][year] = [];
 				}
-				acc[species][yearKey].push({
-					normalizedDate,
-					catchValue: record[species] || 0,
-				});
-			}
-		});
 
-		return acc;
-	}, {});
+				const normalizedDate = new Date(`2000-${month}-${day}`).getTime(); // Normalize the date
+				const catchValue = record[species] || 0; // Default to 0 if species is missing
+
+				transformed[species][year].push({ normalizedDate, catchValue });
+			});
+		}
+	});
 
 	return transformed;
 };
@@ -259,7 +263,20 @@ const RecordsBySeasonChart = () => {
 					valueLabelDisplay="auto"
 					min={1}
 					max={12}
-					marks
+					marks={[
+						{ value: 1, label: "J" },
+						{ value: 2, label: "F" },
+						{ value: 3, label: "M" },
+						{ value: 4, label: "A" },
+						{ value: 5, label: "M" },
+						{ value: 6, label: "J" },
+						{ value: 7, label: "J" },
+						{ value: 8, label: "A" },
+						{ value: 9, label: "S" },
+						{ value: 10, label: "O" },
+						{ value: 11, label: "N" },
+						{ value: 12, label: "D" },
+					]}
 					step={1}
 					valueLabelFormat={formatSliderValue}
 					getAriaValueText={formatSliderValue}
@@ -275,46 +292,55 @@ const RecordsBySeasonChart = () => {
 			</Button>
 
 			{/* Display a chart for each species */}
-			{Object.keys(dataBySpecies).map((species) => (
-				<Paper
-					key={species}
-					style={{ margin: "20px", padding: "20px" }}>
-					<Typography variant="h6">{`${species} Catch Records`}</Typography>
-					<LineChart
-						width={600}
-						height={300}
-						margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-						<CartesianGrid strokeDasharray="3 3" />
-						<XAxis
-							dataKey="normalizedDate"
-							tickFormatter={dateFormatter}
-							type="number"
-							domain={["dataMin", "dataMax"]}
-						/>
-						<YAxis />
-						<Tooltip />
-						<Legend />
-						{Object.keys(dataBySpecies[species]).map((year) => {
-							// Sort the data for this year
-							const sortedData = [...dataBySpecies[species][year]].sort(
-								(a, b) => a.normalizedDate - b.normalizedDate
-							);
-							console.log(`Sorted Data for ${species} ${year}:`, sortedData);
+			{Object.keys(dataBySpecies).map((species) => {
+				let combinedData = [];
+				Object.keys(dataBySpecies[species]).forEach((year) => {
+					combinedData = combinedData.concat(
+						dataBySpecies[species][year].map((item) => ({
+							...item,
+							uniqueKey: `${item.normalizedDate}-${year}`, // Use for a unique key, not for plotting
+							year: year,
+						}))
+					);
+				});
 
-							return (
+				console.log(`Combined Data for ${species}:`, combinedData);
+
+				return (
+					<Paper
+						key={species}
+						style={{ margin: "20px", padding: "20px" }}>
+						<Typography variant="h6">{`${species} Catch Records`}</Typography>
+						<LineChart
+							width={600}
+							height={300}
+							data={combinedData} // Use the combined data array
+							margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis
+								dataKey="normalizedDate"
+								tickFormatter={dateFormatter}
+								type="number"
+								domain={["dataMin", "dataMax"]}
+							/>
+							<YAxis />
+							<Tooltip />
+							<Legend />
+							{Object.keys(dataBySpecies[species]).map((year) => (
 								<Line
 									key={year}
 									type="monotone"
-									data={sortedData}
 									dataKey="catchValue"
 									stroke={yearColorMapping[year] || "#000000"}
 									name={`Year ${year}`}
+									// Filter data to include only points from this year
+									data={combinedData.filter((point) => point.year === year)}
 								/>
-							);
-						})}
-					</LineChart>
-				</Paper>
-			))}
+							))}
+						</LineChart>
+					</Paper>
+				);
+			})}
 		</div>
 	);
 };
