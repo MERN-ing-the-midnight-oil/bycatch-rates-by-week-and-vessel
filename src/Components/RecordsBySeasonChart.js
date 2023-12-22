@@ -178,7 +178,9 @@ const RecordsBySeasonChart = () => {
 
 	// Event handler for the "Submit" button
 	const handleSubmit = () => {
-		console.log("Submitting query with the following parameters:");
+		console.log(
+			"handleSubmit is submitting getRecordsForChartByVesselAndMonthRange query with the following parameters:"
+		);
 		console.log("Vessel Name:", vesselName);
 		console.log("Start Month:", startMonth);
 		console.log("End Month:", endMonth);

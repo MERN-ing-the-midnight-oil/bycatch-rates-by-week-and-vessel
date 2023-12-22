@@ -65,30 +65,29 @@ const catchRecordResolvers = {
 			{ startMonth, endMonth, vesselName }
 		) => {
 			try {
+				console.log(`Querying for vessel: ${vesselName}`);
 				const vessel = await Vessel.findOne({ name: vesselName });
 				if (!vessel) {
 					throw new Error("Vessel not found");
 				}
+				console.log(`Found vessel: ${vessel.name} with ID: ${vessel._id}`);
 
-				const currentYear = new Date().getFullYear();
-				const startDate = new Date(currentYear, startMonth - 1, 1);
-				const endDate = new Date(currentYear, endMonth, 0);
-
-				const records = await CatchRecord.find({
-					vessel: vessel._id,
-					weekEndDate: {
-						$gte: startDate,
-						$lte: endDate,
+				const records = await CatchRecord.aggregate([
+					{ $match: { vessel: vessel._id } },
+					{ $project: { month: { $month: "$weekEndDate" }, data: "$$ROOT" } },
+					{ $match: { month: { $gte: startMonth, $lte: endMonth } } },
+					{
+						$lookup: {
+							from: "vessels",
+							localField: "data.vessel",
+							foreignField: "_id",
+							as: "vesselInfo",
+						},
 					},
-				})
-					.sort({ weekEndDate: 1 })
-					.populate("vessel")
-					.lean(); // Using .lean() for performance optimization
-
-				// Convert Date objects to strings
-				records.forEach((record) => {
-					record.weekEndDate = record.weekEndDate.toISOString().split("T")[0]; // Format as 'YYYY-MM-DD'
-				});
+					{ $unwind: "$vesselInfo" },
+					{ $addFields: { "data.vessel": "$vesselInfo" } },
+					{ $replaceRoot: { newRoot: "$data" } },
+				]).exec();
 
 				return records;
 			} catch (error) {
@@ -96,6 +95,7 @@ const catchRecordResolvers = {
 				throw new Error(`Error fetching catch records for chart`);
 			}
 		},
+
 		getAllVessels: async () => {
 			try {
 				// Fetch all vessels and sort them by name in ascending order
