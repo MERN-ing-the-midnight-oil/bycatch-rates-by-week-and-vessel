@@ -3,6 +3,7 @@ const Vessel = require("../models/VesselModel");
 
 const catchRecordResolvers = {
 	Query: {
+		//finds the vessel then uses an aggregation pipeline  to match records with the vessel, project a new field by extracting the month from weekEndDate, matches records where "month" is within the specified range.
 		getRecordsByVesselAndMonthRange: async (
 			_,
 			{ startMonth, endMonth, vesselName, page = 0, pageSize = 10 }
@@ -17,27 +18,30 @@ const catchRecordResolvers = {
 					throw new Error("Vessel not found");
 				}
 
-				const currentYear = new Date().getFullYear(); // You can adjust this based on your requirements
-				const startDate = new Date(currentYear, startMonth - 1, 1);
-				const endDate = new Date(currentYear, endMonth, 0);
-
-				const records = await CatchRecord.find({
-					vessel: vessel._id,
-					weekEndDate: {
-						$gte: startDate,
-						$lte: endDate,
+				const records = await CatchRecord.aggregate([
+					{ $match: { vessel: vessel._id } },
+					{ $project: { month: { $month: "$weekEndDate" }, data: "$$ROOT" } },
+					{ $match: { month: { $gte: startMonth, $lte: endMonth } } },
+					{ $skip: page * pageSize },
+					{ $limit: pageSize },
+					{
+						$lookup: {
+							from: "vessels",
+							localField: "data.vessel",
+							foreignField: "_id",
+							as: "vesselInfo",
+						},
 					},
-				})
-					.sort({ weekEndDate: 1 })
-					.populate("vessel")
-					.skip(page * pageSize)
-					.limit(pageSize)
-					.lean(); // Using .lean() for performance optimization
+					{ $unwind: "$vesselInfo" },
+					{ $addFields: { "data.vessel": "$vesselInfo" } },
+					{ $replaceRoot: { newRoot: "$data" } },
+				]).exec();
 
 				// Convert Date objects to strings
 				records.forEach((record) => {
 					record.weekEndDate = record.weekEndDate.toISOString().split("T")[0]; // Format as 'YYYY-MM-DD'
 				});
+
 				// Log the first and last fetched records
 				if (records.length > 0) {
 					console.log("First fetched record:");
