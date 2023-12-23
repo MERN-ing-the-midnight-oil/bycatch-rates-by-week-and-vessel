@@ -1,28 +1,29 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const cors = require("cors");
+
 const path = require("path");
 
 const catchRecordRoutes = require("./routes/catchRecordRoutes");
 
 const { typeDefs, resolvers } = require("./src/schema");
 
+// || "mongodb://127.0.0.1:27017/bycatchDatabase",
 async function connectToDatabase() {
 	try {
 		await mongoose.connect(
-			process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/bycatchDatabase",
+			process.env.MONGODB_URI, // Removed the local DB fallback
 			{
 				useNewUrlParser: true,
 				useUnifiedTopology: true,
 			}
 		);
-
 		console.log("Successfully connected to MongoDB.");
 	} catch (error) {
 		console.error("Error connecting to MongoDB:", error.message);
-		// Optionally exit the application if the database connection fails
-		process.exit(1);
+		process.exit(1); // Optionally exit the application if the database connection fails
 	}
 }
 
