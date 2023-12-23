@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	createColumnHelper,
 	flexRender,
@@ -93,7 +93,18 @@ function CatchRecords() {
 	const [page, setPage] = useState(0);
 	const [pageSize, setPageSize] = useState(10);
 
-	const fetchDataForYear = useCallback(async () => {
+	useEffect(() => {
+		if (data.length > 0) {
+			// Check if initial data has been fetched
+			if (isFetchingByYear) {
+				fetchDataForYear();
+			} else {
+				fetchDataByDateRange();
+			}
+		}
+	}, [page, pageSize]);
+
+	const fetchDataForYear = async () => {
 		if (!year) {
 			console.error("Year is required");
 			return;
@@ -113,13 +124,35 @@ function CatchRecords() {
 		} catch (error) {
 			console.error("Error fetching data:", error);
 		}
-	}, [year, page, pageSize]);
+	};
 
-	const fetchDataByDateRange = useCallback(async () => {
+	const fetchDataByDateRange = async () => {
+		setIsFetchingByYear(false); // Set flag to false when fetching by date range
+
 		try {
+			// Log current page and pageSize values before fetching
+			console.log(
+				"Before fetching by date range - Page:",
+				page,
+				"PageSize:",
+				pageSize
+			);
+
+			// Log the parameters for fetching data
+			console.log("Parameters for fetching data:");
+			console.log("Start Month:", startMonth);
+			console.log("Start Year:", startYear);
+			console.log("End Month:", endMonth);
+			console.log("End Year:", endYear);
+
 			const url = `http://localhost:4000/api/catchrecords/daterange?startMonth=${startMonth}&startYear=${startYear}&endMonth=${endMonth}&endYear=${endYear}&page=${page}&pageSize=${pageSize}`;
+			console.log("Fetching data from:", url);
+
 			const response = await fetch(url);
 			const responseJson = await response.json();
+
+			// Log the entire response
+			console.log("Response from the server:", responseJson);
 
 			if (!response.ok) {
 				throw new Error(
@@ -129,29 +162,38 @@ function CatchRecords() {
 				);
 			}
 
+			// Log Fetched Data
+			console.log("Fetched Data:", responseJson);
+
+			// Check and log if data is an array
+			if (Array.isArray(responseJson)) {
+				console.log("Response is an array with length:", responseJson.length);
+			} else {
+				console.log(
+					"Response is not an array, actual type:",
+					typeof responseJson
+				);
+			}
+
+			// Set data with the response data
 			setData(responseJson.data);
 			if (responseJson.data.length === 0) {
 				alert(responseJson.message); // Alert if no data found
 			}
+
+			// Log current page and pageSize values after fetching
+			console.log(
+				"After fetching by date range - Page:",
+				page,
+				"PageSize:",
+				pageSize
+			);
 		} catch (error) {
 			console.error("Error fetching data:", error);
 			alert(error.message);
+			// Handle the error appropriately in  UI, e.g., set an error state and display it
 		}
-	}, [startMonth, startYear, endMonth, endYear, page, pageSize]);
-
-	// Fetch data based on year selection
-	useEffect(() => {
-		if (isFetchingByYear) {
-			fetchDataForYear();
-		}
-	}, [fetchDataForYear, isFetchingByYear]);
-
-	// Fetch data based on date range selection
-	useEffect(() => {
-		if (!isFetchingByYear) {
-			fetchDataByDateRange();
-		}
-	}, [fetchDataByDateRange, isFetchingByYear]);
+	};
 
 	const handleYearChange = (event) => {
 		setYear(event.target.value);

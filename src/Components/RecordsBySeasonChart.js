@@ -132,8 +132,7 @@ const RecordsBySeasonChart = () => {
 	const [dataBySpecies, setDataBySpecies] = useState({});
 
 	// Fetch vessels list for drop down menu
-	const { loading: loadingVessels, data: vesselsData } =
-		useQuery(GET_ALL_VESSELS);
+	const { data: vesselsData } = useQuery(GET_ALL_VESSELS);
 
 	useEffect(() => {
 		if (vesselsData && vesselsData.getAllVessels) {
