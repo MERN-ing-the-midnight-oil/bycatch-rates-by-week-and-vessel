@@ -1,4 +1,4 @@
-const Vessel = require("../models/VesselModel"); // Update the path according to your project structure
+const Vessel = require("../models/VesselModel");
 
 const vesselResolvers = {
 	Query: {

@@ -30,7 +30,12 @@ function Dashboard() {
 	};
 	return (
 		<div
-			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				minHeight: "100vh",
+				padding: "20px", // Add padding here
+			}}>
 			<div style={{ flex: "1" }}>
 				{/* Header and Image */}
 				<div style={{ textAlign: "center" }}>

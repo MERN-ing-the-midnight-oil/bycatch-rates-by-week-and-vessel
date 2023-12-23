@@ -191,7 +191,7 @@ function CatchRecords() {
 		} catch (error) {
 			console.error("Error fetching data:", error);
 			alert(error.message);
-			// Handle the error appropriately in your UI, e.g., set an error state and display it
+			// Handle the error appropriately in  UI, e.g., set an error state and display it
 		}
 	};
 

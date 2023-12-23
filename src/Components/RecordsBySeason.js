@@ -84,7 +84,7 @@ function RecordsBySeason() {
 	};
 
 	// 	The first useEffect is responsible for triggering the fetchData function whenever the page state changes.
-	// The second useEffect watches for changes in queryData and updates your component's data state accordingly.
+	// The second useEffect watches for changes in queryData and updates the component's data state accordingly.
 	// This ensures that every time the page number changes, a new query is made with the updated page value, and the component's state is updated when new data is fetched.
 	const [
 		getRecords,
