@@ -9,7 +9,6 @@ import {
 	MenuItem,
 	Slider,
 	Typography,
-	Grid,
 	Paper,
 	Button,
 } from "@mui/material";

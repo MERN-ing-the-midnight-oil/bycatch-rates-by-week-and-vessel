@@ -86,35 +86,33 @@ function RecordsBySeason() {
 	// 	The first useEffect is responsible for triggering the fetchData function whenever the page state changes.
 	// The second useEffect watches for changes in queryData and updates the component's data state accordingly.
 	// This ensures that every time the page number changes, a new query is made with the updated page value, and the component's state is updated when new data is fetched.
-	const [
-		getRecords,
-		{ loading: queryLoading, data: queryData, error: queryError },
-	] = useLazyQuery(GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE);
+	const [getRecords, { data: queryData, error: queryError }] = useLazyQuery(
+		GET_RECORDS_BY_VESSEL_AND_MONTH_RANGE
+	);
 
-	// Function to fetch data
-	const fetchData = () => {
-		console.log("Fetching data with variables:", {
-			startMonth,
-			endMonth,
-			vesselName,
-			page,
-			pageSize,
-		});
-		getRecords({
-			variables: {
+	// Fetch data when component mounts and when 'page' changes
+	useEffect(() => {
+		const fetchData = () => {
+			console.log("Fetching data with variables:", {
 				startMonth,
 				endMonth,
 				vesselName,
 				page,
 				pageSize,
-			},
-		});
-	};
+			});
+			getRecords({
+				variables: {
+					startMonth,
+					endMonth,
+					vesselName,
+					page,
+					pageSize,
+				},
+			});
+		};
 
-	// Fetch data when component mounts and when 'page' changes
-	useEffect(() => {
 		fetchData();
-	}, [page]);
+	}, [page, getRecords, startMonth, endMonth, vesselName, pageSize]);
 
 	// Update the data when new query data is received
 	useEffect(() => {
