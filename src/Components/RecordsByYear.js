@@ -100,7 +100,7 @@ function CatchRecords() {
 		}
 		try {
 			const response = await fetch(
-				`http://localhost:4000/api/catchrecords/year?year=${year}&page=${page}&pageSize=${pageSize}`
+				`/api/catchrecords/year?year=${year}&page=${page}&pageSize=${pageSize}`
 			);
 
 			if (!response.ok) {
@@ -114,7 +114,7 @@ function CatchRecords() {
 			console.error("Error fetching data:", error);
 		}
 	}, [year, page, pageSize]);
-
+	//deleted urp prefix http://localhost:4000, it should still work using relative paths
 	const fetchDataByDateRange = useCallback(async () => {
 		try {
 			const url = `http://localhost:4000/api/catchrecords/daterange?startMonth=${startMonth}&startYear=${startYear}&endMonth=${endMonth}&endYear=${endYear}&page=${page}&pageSize=${pageSize}`;

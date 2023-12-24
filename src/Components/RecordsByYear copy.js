@@ -111,7 +111,7 @@ function CatchRecords() {
 		}
 		try {
 			const response = await fetch(
-				`http://localhost:4000/api/catchrecords/year?year=${year}&page=${page}&pageSize=${pageSize}`
+				`/api/catchrecords/year?year=${year}&page=${page}&pageSize=${pageSize}`
 			);
 
 			if (!response.ok) {
@@ -145,7 +145,7 @@ function CatchRecords() {
 			console.log("End Month:", endMonth);
 			console.log("End Year:", endYear);
 
-			const url = `http://localhost:4000/api/catchrecords/daterange?startMonth=${startMonth}&startYear=${startYear}&endMonth=${endMonth}&endYear=${endYear}&page=${page}&pageSize=${pageSize}`;
+			const url = `/api/catchrecords/daterange?startMonth=${startMonth}&startYear=${startYear}&endMonth=${endMonth}&endYear=${endYear}&page=${page}&pageSize=${pageSize}`;
 			console.log("Fetching data from:", url);
 
 			const response = await fetch(url);
