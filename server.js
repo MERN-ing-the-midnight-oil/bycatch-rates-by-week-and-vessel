@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("heapdump");
 const mongoose = require("mongoose");
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
@@ -13,13 +14,37 @@ const { typeDefs, resolvers } = require("./src/schema");
 // || "mongodb://127.0.0.1:27017/bycatchDatabase",
 async function connectToDatabase() {
 	try {
-		await mongoose.connect(
-			process.env.MONGODB_URI, // Removed the local DB fallback
-			{
-				useNewUrlParser: true,
-				useUnifiedTopology: true,
-			}
-		);
+		// Connecting to MongoDB
+		await mongoose.connect(process.env.MONGODB_URI, {
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+		});
+
+		// Logging when mongoose connects to the DB
+		mongoose.connection.on("connected", () => {
+			console.log("Mongoose default connection is open");
+		});
+
+		// Logging any mongoose connection errors
+		mongoose.connection.on("error", (err) => {
+			console.log("Mongoose default connection has occurred " + err + " error");
+		});
+
+		// Logging when mongoose is disconnected
+		mongoose.connection.on("disconnected", () => {
+			console.log("Mongoose default connection is disconnected");
+		});
+
+		// Graceful shutdown and closing the mongoose connection
+		process.on("SIGINT", function () {
+			mongoose.connection.close(function () {
+				console.log(
+					"Mongoose default connection is disconnected due to application termination"
+				);
+				process.exit(0);
+			});
+		});
+
 		console.log("Successfully connected to MongoDB.");
 	} catch (error) {
 		console.error("Error connecting to MongoDB:", error.message);

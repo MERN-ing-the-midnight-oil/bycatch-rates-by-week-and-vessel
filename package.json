@@ -19,6 +19,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "graphql": "^16.8.1",
+    "heapdump": "^0.3.15",
     "mongodb": "^6.3.0",
     "mongoose": "^6.12.3",
     "react": "^18.2.0",
@@ -33,7 +34,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "node server.js",
-    "dev": "concurrently \"npm run server\" \"npm run start\""
+    "dev": "concurrently \"npm run server\" \"npm run start\"",
+    "heroku-postbuild": "npm run build"
   },
   "eslintConfig": {
     "extends": [
