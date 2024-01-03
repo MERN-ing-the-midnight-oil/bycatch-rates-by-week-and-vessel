@@ -2,6 +2,21 @@
 
 ## A demonstration project by Rhys Smoker (Certified full-stack web developer). Contact: merning.the.midnight.oil@gmail.com
 
+## How to Run Locally
+
+This project can be run locally by following these steps:
+
+1. **Clone the Repository:**
+   git clone https://github.com/MERN-ing-the-midnight-oil/bycatch-rates-by-week-and-vessel.git
+   cd bycatch-rates-by-week-and-vessel
+
+2. **Install Dependencies:**
+   Ensure you have Node.js installed on your machine, then execute:
+
+3. **Start the Application:**
+   npm start
+   This command runs the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
 ## Overview
 
 A full stack MERN web application that uses both RESTful methods and GraphQL for data handling. The application is divided into three main features:
