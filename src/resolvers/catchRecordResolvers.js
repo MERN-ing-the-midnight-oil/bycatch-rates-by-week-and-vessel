@@ -1,5 +1,5 @@
 const CatchRecord = require("../models/catchRecordModel");
-const Vessel = require("../models/VesselModel");
+const Vessel = require("../models/vesselModel");
 
 const catchRecordResolvers = {
 	Query: {
