@@ -1,4 +1,4 @@
-const Vessel = require("../models/VesselModel");
+const Vessel = require("../models/vesselModel");
 
 const vesselResolvers = {
 	Query: {
